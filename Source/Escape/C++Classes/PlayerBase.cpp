@@ -47,6 +47,12 @@ void APlayerBase::BeginPlay()
     {
         CameraTiltTimeline->AddInterpFloat(CameraTiltCurve, CameraTiltInterp, FName("Degrees"), FName("Tilt"));
     }
+
+    if (HudWidgetClass)
+    {
+        HudWidget = CreateWidget<UW_HUD>(PlayerController, HudWidgetClass);
+        HudWidget->AddToViewport();
+    }
 }
 
 // Called every frame
@@ -69,12 +75,17 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
         if (IAJump)
         {
-            PlayerEnhancedInputComponent->BindAction(IAJump, ETriggerEvent::Triggered, this, &APlayerBase::InputJump);
+            PlayerEnhancedInputComponent->BindAction(IAJump, ETriggerEvent::Started, this, &APlayerBase::InputJump);
         }
 
         if (IALook)
         {
             PlayerEnhancedInputComponent->BindAction(IALook, ETriggerEvent::Triggered, this, &APlayerBase::Look);
+        }
+
+        if (IADash)
+        {
+            PlayerEnhancedInputComponent->BindAction(IADash, ETriggerEvent::Started, this, &APlayerBase::Dash);
         }
     }
 }
@@ -147,7 +158,7 @@ void APlayerBase::Look(const FInputActionValue& IAValue)
     AddControllerPitchInput(LookVector.Y * MouseYSensitivity * -1);
 }
 
-void APlayerBase::InputJump(const FInputActionValue& IAValue)
+void APlayerBase::InputJump()
 {
     StopCrouching();
     if (bIsOnLadder)
@@ -167,6 +178,23 @@ void APlayerBase::InputJump(const FInputActionValue& IAValue)
     else
     {
         Jump();
+    }
+}
+
+void APlayerBase::Dash()
+{
+    if (!bDashOnCooldown && !bIsGrappling)
+    {
+        bDashOnCooldown = true;
+        int DashForce;
+        if (MovementComponent->IsFalling()) DashForce = 2550;
+        else DashForce = 2700;
+        LaunchCharacter(GetControlRotation().Vector() * DashForce, true, true);
+        
+        GetWorldTimerManager().SetTimer(ScanDashIcon, [this]() { HudWidget->UpdateDashIconScan((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
+        GetWorldTimerManager().SetTimer(ResetDashIconScan, [this]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); HudWidget->UpdateDashIconScan(0.f); }, DashCooldown, false);
+
+        GetWorldTimerManager().SetTimer(DashTimerHandle, [this]() {bDashOnCooldown = false; }, DashCooldown, false);
     }
 }
 

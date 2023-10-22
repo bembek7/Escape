@@ -10,7 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/TimelineComponent.h"
 #include "TimerManager.h"
-
+#include "W_HUD.h"
 
 #include "PlayerBase.generated.h"
 
@@ -55,7 +55,10 @@ protected:
 	void Look(const FInputActionValue& IAValue);
 
 	UFUNCTION(Category = "Input Response")
-	void InputJump(const FInputActionValue& IAValue);
+	void InputJump();
+
+	UFUNCTION(Category = "Input Response")
+	void Dash();
 
 	UFUNCTION()
 	void StopCrouching();
@@ -95,6 +98,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
 	UInputAction* IALook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IADash;
 
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent;
@@ -151,5 +157,25 @@ protected:
 	UPROPERTY()
 	float YWalkAxis;
 
+	UPROPERTY()
+	bool bDashOnCooldown;
+
+	UPROPERTY()
+	bool bIsGrappling;
+
+	UPROPERTY()
+	float DashCooldown = 2.f;
+
+	FTimerHandle DashTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UW_HUD>HudWidgetClass;
+
+	UPROPERTY()
+	UW_HUD* HudWidget;
+
+	FTimerHandle ScanDashIcon;
+
+	FTimerHandle ResetDashIconScan;
 
 };

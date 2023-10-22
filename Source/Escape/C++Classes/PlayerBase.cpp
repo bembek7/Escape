@@ -46,6 +46,7 @@ void APlayerBase::BeginPlay()
     DefaultCrouchSpeed = MovementComponent->MaxWalkSpeedCrouched;
     DefaultAirControl = MovementComponent->AirControl;
     DefaultGravityScale = MovementComponent->GravityScale;
+    DefaultAcceleration = MovementComponent->MaxAcceleration;
 
     if (CameraTiltCurve)
     {
@@ -63,7 +64,36 @@ void APlayerBase::BeginPlay()
 void APlayerBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+    AActor* Floor = MovementComponent->CurrentFloor.HitResult.GetActor();
+    FVector ImpactNormal = MovementComponent->CurrentFloor.HitResult.ImpactNormal;
+    if (Floor)
+    {
+        float RelativePitchDegrees;
+        float RelativeRollDegrees;
+        UKismetMathLibrary::GetSlopeDegreeAngles(Floor->GetActorRightVector(), ImpactNormal, FVector(0, 0, 1), RelativePitchDegrees, RelativeRollDegrees);
+        if (UKismetMathLibrary::Abs(RelativePitchDegrees) > SlidingOffAngle || UKismetMathLibrary::Abs(RelativeRollDegrees) > SlidingOffAngle)
+        {
+            if(!MovementComponent->IsCrouching())CrouchSlide();
+            float WorldPitchDegrees;
+            float WorldRollDegrees;
+            float GeneralAngle = UKismetMathLibrary::FMax(UKismetMathLibrary::Abs(RelativePitchDegrees), UKismetMathLibrary::Abs(RelativeRollDegrees));
+            float SlideOffSpeedMultiplier = 0.5f;
+            int SlideOffAcceleration = 4000;
+            UKismetMathLibrary::GetSlopeDegreeAngles(FVector(0, 1, 0), ImpactNormal, FVector(0, 0, 1), WorldPitchDegrees, WorldRollDegrees);
+            bIsSlidingOff = true;
+            MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed * GeneralAngle * SlideOffSpeedMultiplier;
+            MovementComponent->MaxAcceleration = SlideOffAcceleration;
+            MovementComponent->AddInputVector(FVector(WorldPitchDegrees, WorldRollDegrees, GeneralAngle).GetSafeNormal() * -1, true);
+        }
+        else
+        {
+            if(bIsSlidingOff)StopSlidingOff();
+        }
+    }
+    else
+    {
+        if (bIsSlidingOff)StopSlidingOff();
+    }
 }
 
 // Called to bind functionality to input
@@ -213,19 +243,7 @@ void APlayerBase::CrouchSlideStarted()
 {
     if (MovementComponent->IsMovingOnGround())
     {
-        double PlayerSpeed = UKismetMathLibrary::VSizeXY(MovementComponent->Velocity);
-        Crouch();
-        if (PlayerSpeed >= SpeedNeededToSlide)
-        {
-            MovementComponent->MaxWalkSpeedCrouched = PlayerSpeed + SlideAdditionalSpeed;
-            SlideSpeedDifference = MovementComponent->MaxWalkSpeedCrouched - DefaultCrouchSpeed;
-            MovementComponent->AddImpulse(MovementComponent->Velocity.GetSafeNormal() * PlayerSpeed);
-            SlideSpeedTimeline->PlayFromStart();
-        }
-        else
-        {
-            MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
-        }
+        CrouchSlide();
     }
     else
     {
@@ -244,14 +262,42 @@ void APlayerBase::CrouchSlideTriggered()
 
 void APlayerBase::CrouchSlideCompleted()
 {
-    UnCrouch();
-    MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+    if (!bIsSlidingOff)
+    {
+        UnCrouch();
+        MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+    }
+}
+
+void APlayerBase::CrouchSlide()
+{
+    double PlayerSpeed = UKismetMathLibrary::VSizeXY(MovementComponent->Velocity);
+    Crouch();
+    if (PlayerSpeed >= SpeedNeededToSlide)
+    {
+        MovementComponent->MaxWalkSpeedCrouched = PlayerSpeed + SlideAdditionalSpeed;
+        SlideSpeedDifference = MovementComponent->MaxWalkSpeedCrouched - DefaultCrouchSpeed;
+        MovementComponent->AddImpulse(MovementComponent->Velocity.GetSafeNormal() * PlayerSpeed);
+        SlideSpeedTimeline->PlayFromStart();
+    }
+    else
+    {
+        MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+    }
 }
 
 void APlayerBase::StopCrouching()
 {
     UnCrouch();
     MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+}
+
+void APlayerBase::StopSlidingOff()
+{
+    MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+    MovementComponent->MaxAcceleration = DefaultAcceleration;
+    bIsSlidingOff = false;
+    StopCrouching();
 }
 
 void APlayerBase::BeginWallRun()

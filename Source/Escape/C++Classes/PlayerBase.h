@@ -70,7 +70,13 @@ protected:
 	void CrouchSlideCompleted();
 
 	UFUNCTION()
+	void CrouchSlide();
+
+	UFUNCTION()
 	void StopCrouching();
+
+	UFUNCTION()
+	void StopSlidingOff();
 
 	UFUNCTION(Category = "Wall Run")
 	void BeginWallRun();
@@ -145,6 +151,9 @@ protected:
 	float DefaultGravityScale;
 
 	UPROPERTY()
+	float DefaultAcceleration;
+
+	UPROPERTY()
 	TEnumAsByte<WallRunSide> CurrentSide;
 
 	UPROPERTY()
@@ -182,6 +191,9 @@ protected:
 
 	UPROPERTY()
 	float SlideSpeedDifference;
+
+	UPROPERTY()
+	float SlidingOffAngle = 15;
 	
 	UPROPERTY()
 	int SpeedNeededToSlide = 1100;

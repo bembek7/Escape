@@ -19,6 +19,10 @@ APlayerBase::APlayerBase()
     CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("CameraTiltTimeline"));
     CameraTiltInterp.BindUFunction(this, FName("CameraTilt"));
 
+    SlideSpeedTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("SlideSpeedTimeline"));
+    SlideSpeedInterp.BindUFunction(this, FName("Sliding"));
+    SlideSpeedTimeline->SetTimelineLength(3.5f);
+
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerBase::OnHit);
 }
 
@@ -86,6 +90,13 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
         if (IADash)
         {
             PlayerEnhancedInputComponent->BindAction(IADash, ETriggerEvent::Started, this, &APlayerBase::Dash);
+        }
+
+        if (IACrouchSlide)
+        {
+            PlayerEnhancedInputComponent->BindAction(IACrouchSlide, ETriggerEvent::Started, this, &APlayerBase::CrouchSlideStarted);
+            PlayerEnhancedInputComponent->BindAction(IACrouchSlide, ETriggerEvent::Triggered, this, &APlayerBase::CrouchSlideTriggered);
+            PlayerEnhancedInputComponent->BindAction(IACrouchSlide, ETriggerEvent::Completed, this, &APlayerBase::CrouchSlideCompleted);
         }
     }
 }
@@ -196,6 +207,45 @@ void APlayerBase::Dash()
 
         GetWorldTimerManager().SetTimer(DashTimerHandle, [this]() {bDashOnCooldown = false; }, DashCooldown, false);
     }
+}
+
+void APlayerBase::CrouchSlideStarted()
+{
+    if (MovementComponent->IsMovingOnGround())
+    {
+        double PlayerSpeed = UKismetMathLibrary::VSizeXY(MovementComponent->Velocity);
+        Crouch();
+        if (PlayerSpeed >= SpeedNeededToSlide)
+        {
+            MovementComponent->MaxWalkSpeedCrouched = PlayerSpeed + SlideAdditionalSpeed;
+            SlideSpeedDifference = MovementComponent->MaxWalkSpeedCrouched - DefaultCrouchSpeed;
+            MovementComponent->AddImpulse(MovementComponent->Velocity.GetSafeNormal() * PlayerSpeed);
+            SlideSpeedTimeline->PlayFromStart();
+        }
+        else
+        {
+            MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+        }
+    }
+    else
+    {
+        HoldingCrouch = true;
+    }
+}
+
+void APlayerBase::CrouchSlideTriggered()
+{
+    if (HoldingCrouch)
+    {
+        HoldingCrouch = false;
+        if (!MovementComponent->IsCrouching())CrouchSlideStarted();
+    }
+}
+
+void APlayerBase::CrouchSlideCompleted()
+{
+    UnCrouch();
+    MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
 }
 
 void APlayerBase::StopCrouching()
@@ -333,6 +383,25 @@ FVector APlayerBase::FindLaunchFromWallVelocity() const
     float LaunchForceMultiplier = 0.55f;
     FVector AdditionalUpForce = FVector(0, 0, 150);
     return FVector((FVector::CrossProduct(WallRunDirection, SideToJumpFrom) + FVector(0, 0, 1)) * MovementComponent->JumpZVelocity * LaunchForceMultiplier + AdditionalUpForce);
+}
+
+void APlayerBase::Sliding(float Speed)
+{
+    MovementComponent->MaxWalkSpeedCrouched -= Speed * SlideSpeedDifference;
+    SlideSpeedDifference = MovementComponent->MaxWalkSpeedCrouched - DefaultCrouchSpeed;
+    if (MovementComponent->IsCrouching())
+    {
+        if (MovementComponent->MaxWalkSpeedCrouched <= DefaultCrouchSpeed + 50)
+        {
+            MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
+            Crouch();
+            SlideSpeedTimeline->Stop();
+        }
+    }
+    else
+    {
+        SlideSpeedTimeline->Stop();
+    }
 }
 
 

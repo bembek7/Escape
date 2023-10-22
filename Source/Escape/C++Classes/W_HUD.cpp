@@ -19,6 +19,6 @@ void UW_HUD::NativeConstruct()
 
 void UW_HUD::UpdateDashIconScan(float Percent = 0.f)
 {
-	DashIconMaterial->SetScalarParameterValue(ScalarParameterName, Percent);
+	if(DashIconMaterial)DashIconMaterial->SetScalarParameterValue(ScalarParameterName, Percent);
 }
 

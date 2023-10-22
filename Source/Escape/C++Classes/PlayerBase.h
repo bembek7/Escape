@@ -60,6 +60,15 @@ protected:
 	UFUNCTION(Category = "Input Response")
 	void Dash();
 
+	UFUNCTION(Category = "Input Response")
+	void CrouchSlideStarted();
+
+	UFUNCTION(Category = "Input Response")
+	void CrouchSlideTriggered();
+
+	UFUNCTION(Category = "Input Response")
+	void CrouchSlideCompleted();
+
 	UFUNCTION()
 	void StopCrouching();
 
@@ -87,6 +96,9 @@ protected:
 	UFUNCTION(Category = "Wall Run")
 	FVector FindLaunchFromWallVelocity() const;
 
+	UFUNCTION()
+	void Sliding(float Speed);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
 
@@ -101,6 +113,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
 	UInputAction* IADash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IACrouchSlide;
 
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent;
@@ -141,12 +156,20 @@ protected:
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
 
+	UPROPERTY()
+	UTimelineComponent* SlideSpeedTimeline;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
 	UCurveFloat* CameraTiltCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrouchSlide")
+	UCurveFloat* SlideSpeedCurve;
 
 	FTimerHandle WallRunTimer;
 
 	FOnTimelineFloat CameraTiltInterp;
+
+	FOnTimelineFloat SlideSpeedInterp;
 
 	UPROPERTY()
 	float MouseXSensitivity = 0.6f;
@@ -156,6 +179,18 @@ protected:
 	
 	UPROPERTY()
 	float YWalkAxis;
+
+	UPROPERTY()
+	float SlideSpeedDifference;
+	
+	UPROPERTY()
+	int SpeedNeededToSlide = 1100;
+
+	UPROPERTY()
+	int SlideAdditionalSpeed = 450;
+
+	UPROPERTY()
+	bool HoldingCrouch;
 
 	UPROPERTY()
 	bool bDashOnCooldown;

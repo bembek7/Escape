@@ -42,11 +42,105 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	/////////////FUNCTIONS//////////////
+
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit);
 
-	UFUNCTION(Category = "Wall Run")
-	bool CanWallBeRunOn(const FVector& WallNormal);
+	// Crouch / Slide
+
+	UFUNCTION(BlueprintCallable, Category = "Crouch/Slide")
+	void CrouchSlide();
+
+	UFUNCTION(BlueprintCallable, Category = "Crouch/Slide")
+	void StopCrouching();
+
+	/////////////VARIABLES//////////////
+
+	// Enhaced input
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IAWalk;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IAJump;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IALook;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IADash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IACrouchSlide;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UCharacterMovementComponent* MovementComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	APlayerController* PlayerController;
+
+	// Sliding off
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SlidingOff")
+	bool bIsSlidingOff;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SlidingOff")
+	float SlidingOffAngle = 15;
+
+	// Wall run
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	bool bIsOnLadder;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	bool bIsWallRunning;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	FName WallRunTag = FName("WallToRun");
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	UCurveFloat* CameraTiltCurve;		
+
+	// Slide
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
+		UCurveFloat* SlideSpeedCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
+		int SpeedNeededToSlide = 1100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
+		int SlideAdditionalSpeed = 450;
+
+	// Dash
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+		float DashCooldown = 2.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+		bool bDashOnCooldown;
+
+	// Settings
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	float MouseXSensitivity = 0.6f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	float MouseYSensitivity = 0.6f;	
+	
+	// Widgets
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UW_HUD>HudWidgetClass; // blueprint child will set the widget class
+
+private:
+	/////////////FUNCTIONS//////////////
+	
+	// Input responses
 
 	UFUNCTION(Category = "Input Response")
 	void Walk(const FInputActionValue& IAValue);
@@ -69,14 +163,15 @@ protected:
 	UFUNCTION(Category = "Input Response")
 	void CrouchSlideCompleted();
 
-	UFUNCTION()
-	void CrouchSlide();
+	// Sliding off
 
-	UFUNCTION()
-	void StopCrouching();
-
-	UFUNCTION()
+	UFUNCTION(Category = "SlidingOff")
 	void StopSlidingOff();
+
+	// Wall run
+
+	UFUNCTION(Category = "Wall Run")
+	bool CanWallBeRunOn(const FVector& WallNormal);
 
 	UFUNCTION(Category = "Wall Run")
 	void BeginWallRun();
@@ -101,128 +196,49 @@ protected:
 
 	UFUNCTION(Category = "Wall Run")
 	FVector FindLaunchFromWallVelocity() const;
-
-	UFUNCTION()
+	
+	// Sliding
+	UFUNCTION(Category = "Slide")
 	void Sliding(float Speed);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
-	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
-	UInputAction* IAWalk;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
-	UInputAction* IAJump;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
-	UInputAction* IALook;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
-	UInputAction* IADash;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
-	UInputAction* IACrouchSlide;
+	/////////////VARIABLES//////////////
 
 	UPROPERTY()
-	UCharacterMovementComponent* MovementComponent;
+	UW_HUD* HudWidget;
 
-	UPROPERTY()
-	APlayerController* PlayerController;
-
-	UPROPERTY()
-	bool bIsSlidingOff;
-
-	UPROPERTY()
-	bool bIsOnLadder;
-
-	UPROPERTY()
-	bool bIsWallRunning;
-
-	UPROPERTY()
 	FVector LadderForwardVector;
-
-	UPROPERTY()
-	float DefaultCrouchSpeed;
-	
-	UPROPERTY()
-	float DefaultAirControl;
-
-	UPROPERTY()
-	float DefaultGravityScale;
-
-	UPROPERTY()
-	float DefaultAcceleration;
-
-	UPROPERTY()
-	TEnumAsByte<WallRunSide> CurrentSide;
-
-	UPROPERTY()
 	FVector WallRunDirection;
 	
-	UPROPERTY()
-	FName WallRunTag = FName("WallToRun");
+	TEnumAsByte<WallRunSide> CurrentSide;
+
+	// Variables to save default movement settings
 	
+	float DefaultCrouchSpeed;
+	float DefaultAirControl;
+	float DefaultGravityScale;
+	float DefaultAcceleration;
+
+	float YWalkAxis;
+	float SlideSpeedDifference;
+	
+	bool HoldingCrouch;
+	bool bIsGrappling;
+
+	// Timers
+
+	FTimerHandle DashTimerHandle;
+	FTimerHandle ScanDashIcon;
+	FTimerHandle ResetDashIconScan;
+	FTimerHandle WallRunTimer;
+
+	// Timelines
+
+	FOnTimelineFloat CameraTiltInterp;
+	FOnTimelineFloat SlideSpeedInterp;
+
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
 
 	UPROPERTY()
 	UTimelineComponent* SlideSpeedTimeline;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
-	UCurveFloat* CameraTiltCurve;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrouchSlide")
-	UCurveFloat* SlideSpeedCurve;
-
-	FTimerHandle WallRunTimer;
-
-	FOnTimelineFloat CameraTiltInterp;
-
-	FOnTimelineFloat SlideSpeedInterp;
-
-	UPROPERTY()
-	float MouseXSensitivity = 0.6f;
-
-	UPROPERTY()
-	float MouseYSensitivity = 0.6f;
-	
-	UPROPERTY()
-	float YWalkAxis;
-
-	UPROPERTY()
-	float SlideSpeedDifference;
-
-	UPROPERTY()
-	float SlidingOffAngle = 15;
-	
-	UPROPERTY()
-	int SpeedNeededToSlide = 1100;
-
-	UPROPERTY()
-	int SlideAdditionalSpeed = 450;
-
-	UPROPERTY()
-	bool HoldingCrouch;
-
-	UPROPERTY()
-	bool bDashOnCooldown;
-
-	UPROPERTY()
-	bool bIsGrappling;
-
-	UPROPERTY()
-	float DashCooldown = 2.f;
-
-	FTimerHandle DashTimerHandle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<UW_HUD>HudWidgetClass;
-
-	UPROPERTY()
-	UW_HUD* HudWidget;
-
-	FTimerHandle ScanDashIcon;
-
-	FTimerHandle ResetDashIconScan;
-
 };

@@ -19,22 +19,20 @@ class ESCAPE_API UW_HUD : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UpdateDashIconScan(float Percent);
 
 
 protected:
-	
-
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UImage* DashIcon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInterface* IconMaterialParent;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInstanceDynamic* DashIconMaterial;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ScalarParameterName = FName("Percent");
 };

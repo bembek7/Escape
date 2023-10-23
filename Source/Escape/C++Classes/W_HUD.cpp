@@ -9,15 +9,14 @@
 void UW_HUD::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	if (DashIcon)
+	if (DashIcon) // binding the material to image
 	{
 		DashIconMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), IconMaterialParent);
 		DashIcon->SetBrushFromMaterial(DashIconMaterial);
 	}
 }
 
-void UW_HUD::UpdateDashIconScan(float Percent = 0.f)
+void UW_HUD::UpdateDashIconScan(float Percent = 0.f) // scanning the dash icon
 {
 	if(DashIconMaterial)DashIconMaterial->SetScalarParameterValue(ScalarParameterName, Percent);
 }

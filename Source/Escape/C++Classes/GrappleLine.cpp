@@ -20,13 +20,14 @@ void AGrappleLine::BeginPlay()
 {
 	Super::BeginPlay();
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	GrappleLine->SetAttachEndToComponent(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetMesh());
+	GrappleLine->SetAttachEndToComponent(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetMesh()); // we are attaching end of grapple line to player
 }
 
 // Called every frame
 void AGrappleLine::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// developing the grapple from player to a grapple target
 	if (bDeveloping)GrappleLine->SetWorldLocation(FMath::VInterpTo(GrappleLine->GetComponentLocation(), GrappleTarget, DeltaTime, DevelopingSpeed));
 }
 

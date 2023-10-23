@@ -66,7 +66,7 @@ void APlayerBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
     AActor* Floor = MovementComponent->CurrentFloor.HitResult.GetActor();
     FVector ImpactNormal = MovementComponent->CurrentFloor.HitResult.ImpactNormal;
-    if (Floor)
+    if (Floor) // Checking if player should slide off the floor he is standing on or if he should stop sliding
     {
         float RelativePitchDegrees;
         float RelativeRollDegrees;
@@ -102,6 +102,7 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
     if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
+        // Binding inputs
         if (IAWalk)
         {
             PlayerEnhancedInputComponent->BindAction(IAWalk, ETriggerEvent::Triggered, this, &APlayerBase::Walk);
@@ -222,13 +223,13 @@ void APlayerBase::InputJump()
     }
 }
 
-void APlayerBase::Dash()
+void APlayerBase::Dash() // Dash ability
 {
     if (!bDashOnCooldown && !bIsGrappling)
     {
         bDashOnCooldown = true;
         int DashForce;
-        if (MovementComponent->IsFalling()) DashForce = 2550;
+        if (MovementComponent->IsFalling()) DashForce = 2550; // Dash is stronger if player is not in air
         else DashForce = 2700;
         LaunchCharacter(GetControlRotation().Vector() * DashForce, true, true);
         
@@ -269,7 +270,7 @@ void APlayerBase::CrouchSlideCompleted()
     }
 }
 
-void APlayerBase::CrouchSlide()
+void APlayerBase::CrouchSlide() // if player is fast enough we initiate slide if not we initiate normal crouch
 {
     double PlayerSpeed = UKismetMathLibrary::VSizeXY(MovementComponent->Velocity);
     Crouch();
@@ -300,7 +301,7 @@ void APlayerBase::StopSlidingOff()
     StopCrouching();
 }
 
-void APlayerBase::BeginWallRun()
+void APlayerBase::BeginWallRun() // setting the values for wall running or movement and tilting camera
 {
     MovementComponent->AirControl = 1;
     MovementComponent->GravityScale = 0;
@@ -310,7 +311,7 @@ void APlayerBase::BeginWallRun()
     GetWorldTimerManager().SetTimer(WallRunTimer, this, &APlayerBase::UpdateWallRun, 0.1f, true);
 }
 
-void APlayerBase::EndWallRun()
+void APlayerBase::EndWallRun() // setting the default values or movement and tilting camera back
 {
     MovementComponent->AirControl = DefaultAirControl;
     MovementComponent->GravityScale = DefaultGravityScale;
@@ -320,7 +321,7 @@ void APlayerBase::EndWallRun()
     GetWorldTimerManager().ClearTimer(WallRunTimer);
 }
 
-void APlayerBase::UpdateWallRun()
+void APlayerBase::UpdateWallRun() // wall run function called every tick when wallrunning setting velocity or ending the wall run
 {
     FHitResult HitResult;
     FVector SideToTrace;
@@ -363,7 +364,7 @@ bool APlayerBase::CanWallRun(const FVector& SurfaceNormal)
     return !bIsWallRunning && MovementComponent->IsFalling() && PlayerVel > MinVelocity && YWalkAxis >= 0 && CanWallBeRunOn(SurfaceNormal);
 }
 
-void APlayerBase::CameraTilt(float TimelineVal)
+void APlayerBase::CameraTilt(float TimelineVal) // when wallrunning camera tilts a little bit
 {
     int CameraTiltSide;
     switch (CurrentSide)
@@ -431,7 +432,7 @@ FVector APlayerBase::FindLaunchFromWallVelocity() const
     return FVector((FVector::CrossProduct(WallRunDirection, SideToJumpFrom) + FVector(0, 0, 1)) * MovementComponent->JumpZVelocity * LaunchForceMultiplier + AdditionalUpForce);
 }
 
-void APlayerBase::Sliding(float Speed)
+void APlayerBase::Sliding(float Speed) // Slide function called every tick when sliding // should add some left-right input constraints
 {
     MovementComponent->MaxWalkSpeedCrouched -= Speed * SlideSpeedDifference;
     SlideSpeedDifference = MovementComponent->MaxWalkSpeedCrouched - DefaultCrouchSpeed;
@@ -449,5 +450,3 @@ void APlayerBase::Sliding(float Speed)
         SlideSpeedTimeline->Stop();
     }
 }
-
-

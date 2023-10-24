@@ -77,15 +77,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
 	UInputAction* IACrouchSlide;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 	UCharacterMovementComponent* MovementComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 	APlayerController* PlayerController;
 
 	// Sliding off
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SlidingOff")
+	UPROPERTY(BlueprintReadOnly, Category = "SlidingOff")
 	bool bIsSlidingOff;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SlidingOff")
@@ -93,22 +93,22 @@ protected:
 
 	// Wall run
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	UPROPERTY(BlueprintReadOnly, Category = "Wall Run")
 	bool bIsOnLadder;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	UPROPERTY(BlueprintReadOnly, Category = "Wall Run")
 	bool bIsWallRunning;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wall Run")
 	FName WallRunTag = FName("WallToRun");
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wall Run")
 	UCurveFloat* CameraTiltCurve;		
 
 	// Slide
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
-		UCurveFloat* SlideSpeedCurve;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Slide")
+	UCurveFloat* SlideSpeedCurve;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
 		int SpeedNeededToSlide = 1100;
@@ -121,7 +121,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
 		float DashCooldown = 2.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	UPROPERTY(BlueprintReadOnly, Category = "Dash")
 		bool bDashOnCooldown;
 
 	// Settings
@@ -134,7 +134,7 @@ protected:
 	
 	// Widgets
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UW_HUD>HudWidgetClass; // blueprint child will set the widget class
 
 private:

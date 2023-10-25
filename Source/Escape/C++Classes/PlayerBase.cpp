@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+
 // Sets default values
 APlayerBase::APlayerBase()
 {
@@ -21,7 +22,9 @@ APlayerBase::APlayerBase()
 
     SlideSpeedTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("SlideSpeedTimeline"));
     SlideSpeedInterp.BindUFunction(this, FName("Sliding"));
-    SlideSpeedTimeline->SetTimelineLength(3.5f);
+
+    GrappleDragTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("GrappleDragTimeline"));
+    GrappleDragSpeedInterp.BindUFunction(this, FName("GrappleDragUpdate"));
 
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerBase::OnHit);
 }
@@ -53,10 +56,25 @@ void APlayerBase::BeginPlay()
         CameraTiltTimeline->AddInterpFloat(CameraTiltCurve, CameraTiltInterp, FName("Degrees"), FName("Tilt"));
     }
 
+    if (SlideSpeedCurve)
+    {
+        SlideSpeedTimeline->AddInterpFloat(SlideSpeedCurve, SlideSpeedInterp, FName("Speed"), FName("SpeedTrack"));
+    }
+
+    if (GrappleDragForceCurve)
+    {
+        GrappleDragTimeline->AddInterpFloat(GrappleDragForceCurve, GrappleDragSpeedInterp, FName("Speed"), FName("GrappleDragSpeed"));
+    }
+
     if (HudWidgetClass)
     {
         HudWidget = CreateWidget<UW_HUD>(PlayerController, HudWidgetClass);
         HudWidget->AddToViewport();
+    }
+
+    if (PauseWidgetClass)
+    {
+        PauseWidget = CreateWidget<UUserWidget>(PlayerController, PauseWidgetClass);
     }
 }
 
@@ -73,7 +91,10 @@ void APlayerBase::Tick(float DeltaTime)
         UKismetMathLibrary::GetSlopeDegreeAngles(Floor->GetActorRightVector(), ImpactNormal, FVector(0, 0, 1), RelativePitchDegrees, RelativeRollDegrees);
         if (UKismetMathLibrary::Abs(RelativePitchDegrees) > SlidingOffAngle || UKismetMathLibrary::Abs(RelativeRollDegrees) > SlidingOffAngle)
         {
-            if(!MovementComponent->IsCrouching())CrouchSlide();
+            if (!MovementComponent->IsCrouching())
+            {
+                CrouchSlide();
+            }
             float WorldPitchDegrees;
             float WorldRollDegrees;
             float GeneralAngle = UKismetMathLibrary::FMax(UKismetMathLibrary::Abs(RelativePitchDegrees), UKismetMathLibrary::Abs(RelativeRollDegrees));
@@ -87,12 +108,18 @@ void APlayerBase::Tick(float DeltaTime)
         }
         else
         {
-            if(bIsSlidingOff)StopSlidingOff();
+            if (bIsSlidingOff)
+            {
+                StopSlidingOff();
+            }
         }
     }
     else
     {
-        if (bIsSlidingOff)StopSlidingOff();
+        if (bIsSlidingOff)
+        {
+            StopSlidingOff();
+        }
     }
 }
 
@@ -129,6 +156,16 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
             PlayerEnhancedInputComponent->BindAction(IACrouchSlide, ETriggerEvent::Triggered, this, &APlayerBase::CrouchSlideTriggered);
             PlayerEnhancedInputComponent->BindAction(IACrouchSlide, ETriggerEvent::Completed, this, &APlayerBase::CrouchSlideCompleted);
         }
+
+        if (IAGrapple)
+        {
+            PlayerEnhancedInputComponent->BindAction(IAGrapple, ETriggerEvent::Started, this, &APlayerBase::UseGrapple);
+        }
+
+        if (IAPause)
+        {
+            PlayerEnhancedInputComponent->BindAction(IAPause, ETriggerEvent::Started, this, &APlayerBase::PauseUnpause);
+        }
     }
 }
 
@@ -149,6 +186,47 @@ bool APlayerBase::CanWallBeRunOn(const FVector& WallNormal)
     double WallAngle = UKismetMathLibrary::DegAcos(FVector::DotProduct(WallNormal.GetSafeNormal2D(), WallNormal));
     bool WallAngleRunnable = WallAngle < MovementComponent->GetWalkableFloorAngle();
     return WallNormal.Z >= WallAcceptedAngle && WallAngleRunnable;
+}
+
+void APlayerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow)
+{
+    WidgetToShow->AddToPlayerScreen();
+    PlayerController->SetInputMode(FInputModeUIOnly());
+    PlayerController->bShowMouseCursor = true;
+}
+
+void APlayerBase::HideFocusedWidget(UUserWidget* WidgetToHide)
+{
+    WidgetToHide->RemoveFromParent();
+    PlayerController->SetInputMode(FInputModeGameOnly());
+    PlayerController->bShowMouseCursor = false;
+}
+
+void APlayerBase::ShowWidgetAndPause(UUserWidget* WidgetToShow)
+{
+    ShowWidgetToFocus(WidgetToShow);
+    UGameplayStatics::SetGamePaused(GetWorld(), true);
+}
+
+void APlayerBase::HideWidgetAndUnpause(UUserWidget* WidgetToHide)
+{
+    HideFocusedWidget(WidgetToHide);
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+}
+
+void APlayerBase::PauseUnpause()
+{
+    if (PauseWidget)
+    {
+        if(!PauseWidget->IsVisible())
+        {
+            ShowWidgetAndPause(PauseWidget);
+        }
+        else
+        {
+            HideWidgetAndUnpause(PauseWidget);
+        }
+    }
 }
 
 void APlayerBase::Walk(const FInputActionValue& IAValue)
@@ -229,8 +307,14 @@ void APlayerBase::Dash() // Dash ability
     {
         bDashOnCooldown = true;
         int DashForce;
-        if (MovementComponent->IsFalling()) DashForce = 2550; // Dash is stronger if player is not in air
-        else DashForce = 2700;
+        if (MovementComponent->IsFalling())
+        {
+            DashForce = 2550; // Dash is stronger if player is not in air
+        }
+        else
+        {
+            DashForce = 2700;
+        }
         LaunchCharacter(GetControlRotation().Vector() * DashForce, true, true);
         
         GetWorldTimerManager().SetTimer(ScanDashIcon, [this]() { HudWidget->UpdateDashIconScan((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
@@ -248,16 +332,19 @@ void APlayerBase::CrouchSlideStarted()
     }
     else
     {
-        HoldingCrouch = true;
+        bHoldingCrouch = true;
     }
 }
 
 void APlayerBase::CrouchSlideTriggered()
 {
-    if (HoldingCrouch)
+    if (bHoldingCrouch)
     {
-        HoldingCrouch = false;
-        if (!MovementComponent->IsCrouching())CrouchSlideStarted();
+        bHoldingCrouch = false;
+        if (!MovementComponent->IsCrouching())
+        {
+            CrouchSlideStarted();
+        }
     }
 }
 
@@ -327,16 +414,17 @@ void APlayerBase::UpdateWallRun() // wall run function called every tick when wa
     FVector SideToTrace;
     switch (CurrentSide)
     {
-    case Left:
-        SideToTrace = FVector(0, 0, -1);
-        break;
+        case Left:
+            SideToTrace = FVector(0, 0, -1);
+            break;
 
-    case Right:
-        SideToTrace = FVector(0, 0, 1);
-        break;
+        case Right:
+            SideToTrace = FVector(0, 0, 1);
+            break;
     }
     int TraceLength = 200;
-    bool bHitWall = GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), GetActorLocation() + FVector::CrossProduct(WallRunDirection, SideToTrace) * TraceLength, ECC_Visibility, FCollisionQueryParams(FName(NAME_None), false, this));
+    FVector TraceEnd = GetActorLocation() + FVector::CrossProduct(WallRunDirection, SideToTrace) * TraceLength;
+    bool bHitWall = GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), TraceEnd, ECC_Visibility, FCollisionQueryParams(FName(NAME_None), false, this));
     if (bHitWall)
     {
         if (HitResult.Component->ComponentHasTag(WallRunTag) && FindRunSide(HitResult.ImpactNormal) == CurrentSide)
@@ -369,13 +457,13 @@ void APlayerBase::CameraTilt(float TimelineVal) // when wallrunning camera tilts
     int CameraTiltSide;
     switch (CurrentSide)
     {
-    case Left:
-        CameraTiltSide = -1;
-        break;
+        case Left:
+            CameraTiltSide = -1;
+            break;
 
-    case Right:
-        CameraTiltSide = 1;
-        break;
+        case Right:
+            CameraTiltSide = 1;
+            break;
     }
     FRotator CurrentRoation = PlayerController->GetControlRotation();
     PlayerController->SetControlRotation(FRotator(CurrentRoation.Pitch, CurrentRoation.Yaw, TimelineVal * CameraTiltSide));
@@ -387,13 +475,13 @@ WallRunSide APlayerBase::FindRunSide(const FVector& WallNormal)
     WallRunSide SideFound;
     switch (DotResult)
     {
-    case false:
-        SideFound = Left;
-        break;
+        case false:
+            SideFound = Left;
+            break;
 
-    case true:
-        SideFound = Right;
-        break;
+        case true:
+            SideFound = Right;
+            break;
     }
     return SideFound;
 }
@@ -403,13 +491,16 @@ FVector APlayerBase::FindRunDirection(const FVector& WallNormal, WallRunSide Sid
     FVector RunSide;
     switch (Side)
     {
-    case Left:
-        RunSide = FVector(0, 0, -1);
-        break;
+        case Left:
+            RunSide = FVector(0, 0, -1);
+            break;
 
-    case Right:
-        RunSide = FVector(0, 0, 1);
-        break;
+        case Right:
+            RunSide = FVector(0, 0, 1);
+            break;
+
+        default:
+            break;
     }
     return FVector::CrossProduct(WallNormal, RunSide);
 }
@@ -419,13 +510,13 @@ FVector APlayerBase::FindLaunchFromWallVelocity() const
     FVector SideToJumpFrom;
     switch (CurrentSide)
     {
-    case Left:
-        SideToJumpFrom = FVector(0, 0, 1);
-        break;
+        case Left:
+            SideToJumpFrom = FVector(0, 0, 1);
+            break;
 
-    case Right:
-        SideToJumpFrom = FVector(0, 0, -1);
-        break;
+        case Right:
+            SideToJumpFrom = FVector(0, 0, -1);
+            break;
     }
     float LaunchForceMultiplier = 0.55f;
     FVector AdditionalUpForce = FVector(0, 0, 150);
@@ -449,4 +540,97 @@ void APlayerBase::Sliding(float Speed) // Slide function called every tick when 
     {
         SlideSpeedTimeline->Stop();
     }
+}
+
+void APlayerBase::UseGrapple()
+{
+    if (!bIsGrappling)
+    {
+        if (bCanUseGrapple && !bGrappleCanSecondUse && FindGrappleTarget())
+        {
+            GrappleFirst();
+        }
+    }
+    else
+    {
+        GrappleSecond();
+    }
+}
+
+void APlayerBase::GrappleFirst()
+{
+    GrappleLine = GetWorld()->SpawnActor<AGrappleLine>(GrappleLineClass, GetActorTransform(), FActorSpawnParameters());
+    GrappleLine->GrappleOn(GrappleTarget->GetActorLocation());
+    bGrappleCanSecondUse = true;
+    GrappleTargetSphereColl = Cast<USphereComponent>(GrappleTarget->GetComponentByClass(USphereComponent::StaticClass()));
+    bGrappleArrived = false;
+    bIsGrappling = true;
+    bCanUseGrapple = true;
+    MovementComponent->SetMovementMode(EMovementMode::MOVE_Flying);
+    MovementComponent->Velocity = FVector(0, 0, 0);
+    PlayerController->SetIgnoreMoveInput(true);
+    GrappleBeginningDistance = UKismetMathLibrary::Vector_Distance(GetActorLocation(), GrappleTarget->GetActorLocation());
+    GrappleDragTimeline->PlayFromStart();
+}
+
+void APlayerBase::GrappleSecond()
+{
+    GrappleLine->GrappleOff();
+    bIsGrappling = false;
+    bGrappleCanSecondUse = false;
+    PlayerController->SetIgnoreMoveInput(false);
+    GrappleDragTimeline->Stop();
+    MovementComponent->SetMovementMode(MOVE_Walking);
+    FVector ZImpulseToAddOnEnd;
+    if (bGrappleArrived)
+    {
+        ZImpulseToAddOnEnd.Z = 225;
+    }
+    else
+    {
+        ZImpulseToAddOnEnd.Z = 185;
+    }
+    FVector GrappleForce = (MovementComponent->Velocity.GetSafeNormal() + ZImpulseToAddOnEnd) * GrappleImpulseMultiplier;
+    MovementComponent->AddImpulse(GrappleForce);
+}
+
+void APlayerBase::GrappleDragUpdate(float TimelineVal)
+{
+    FVector GrappleDirection;
+    GrappleDirection = (GrappleTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+    FVector GrappleForce;
+    GrappleForce = GrappleDirection * GrappleForceMultiplier * MovementComponent->Mass * TimelineVal;
+    MovementComponent->AddForce(GrappleForce);
+    if (GrappleTargetSphereColl->IsOverlappingActor(this))
+    {
+        bGrappleArrived = true;
+        GrappleSecond();
+    }
+}
+
+bool APlayerBase::FindGrappleTarget()
+{
+    GrappleTarget = nullptr;
+    float TraceRadius = GrappleRange;
+    TArray<FHitResult> TraceResults;
+    TArray<TEnumAsByte<EObjectTypeQuery>>GrappleTargetType;
+    const EObjectTypeQuery GrappleType = UCollisionProfile::Get()->ConvertToObjectType(ECC_GameTraceChannel1);  // grapple object type
+    if(GrappleType)GrappleTargetType.Add(GrappleType);
+    UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), GetActorLocation(), GetActorLocation(), TraceRadius, GrappleTargetType, false, TArray<AActor*>(), EDrawDebugTrace::None, TraceResults, false);
+    float Difference = 999999; // Difference in distance between grapple target and player's cursor
+    FVector PlayerLooks = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetActorForwardVector();
+    for( const auto& Hit : TraceResults)
+    {
+        AActor* TargetFound = Hit.GetActor();
+        bool bTargetOnScreen = TargetFound->WasRecentlyRendered();
+        FVector TargetDirection = FVector(TargetFound->GetActorLocation()-GetActorLocation()).GetSafeNormal();
+        float DistanceTargetToCursor = UKismetMathLibrary::Vector_Distance(TargetDirection, PlayerLooks);
+        bool bTargetCloserToCursor = DistanceTargetToCursor < Difference;
+        if (bTargetOnScreen && bTargetCloserToCursor)
+        {
+            Difference = DistanceTargetToCursor;
+            GrappleTarget = TargetFound;
+        }
+    }
+    return UKismetSystemLibrary::IsValid(GrappleTarget);
 }

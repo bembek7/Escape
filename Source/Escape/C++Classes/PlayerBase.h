@@ -11,7 +11,8 @@
 #include "Components/TimelineComponent.h"
 #include "TimerManager.h"
 #include "W_HUD.h"
-
+#include "GrappleLine.h"
+#include "Components/SphereComponent.h"
 #include "PlayerBase.generated.h"
 
 UENUM()
@@ -40,6 +41,10 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
+	void PauseUnpause();
 
 protected:
 	/////////////FUNCTIONS//////////////
@@ -77,6 +82,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
 	UInputAction* IACrouchSlide;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IAPause;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UInputAction* IAGrapple;
+
 	UPROPERTY(BlueprintReadOnly)
 	UCharacterMovementComponent* MovementComponent;
 
@@ -111,18 +122,41 @@ protected:
 	UCurveFloat* SlideSpeedCurve;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
-		int SpeedNeededToSlide = 1100;
+	int SpeedNeededToSlide = 1100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
-		int SlideAdditionalSpeed = 450;
+	int SlideAdditionalSpeed = 450;
 
 	// Dash
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
-		float DashCooldown = 2.f;
+	float DashCooldown = 2.f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Dash")
-		bool bDashOnCooldown;
+	bool bDashOnCooldown;
+
+	// Grapple
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grapple")
+	TSubclassOf<AGrappleLine>GrappleLineClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Grapple")
+	AActor* GrappleTarget;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Grapple")
+	bool bIsGrappling;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grapple")
+	int GrappleImpulseMultiplier = 500;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grapple")
+	int GrappleForceMultiplier = 16000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grapple")
+	int GrappleRange = 4250;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grapple")
+	UCurveFloat* GrappleDragForceCurve;
 
 	// Settings
 
@@ -131,15 +165,55 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	float MouseYSensitivity = 0.6f;	
-	
-	// Widgets
+
+	// Widgets, blueprint children will set the widgets classes
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<UW_HUD>HudWidgetClass; // blueprint child will set the widget class
+	TSubclassOf<UW_HUD>HudWidgetClass; 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget>PauseWidgetClass; // blueprint child will set the widget class
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget>MainMenuClass; // blueprint child will set the widget class
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget>DeathWidgetClass; // blueprint child will set the widget class
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget>TimeWidgetClass; // blueprint child will set the widget class
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
+
+	// Variables to save default movement settings
+
+	UPROPERTY(BlueprintReadOnly, Category = "SavedDefaults")
+	float DefaultCrouchSpeed;
+	UPROPERTY(BlueprintReadOnly, Category = "SavedDefaults")
+	float DefaultAirControl;
+	UPROPERTY(BlueprintReadOnly, Category = "SavedDefaults")
+	float DefaultGravityScale;
+	UPROPERTY(BlueprintReadOnly, Category = "SavedDefaults")
+	float DefaultAcceleration;
 
 private:
 	/////////////FUNCTIONS//////////////
 	
+	// Widgets
+
+	UFUNCTION(Category = "Widgets")
+	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
+
+	UFUNCTION(Category = "Widgets")
+	void HideFocusedWidget(UUserWidget* WidgetToHide);
+
+	UFUNCTION(Category = "Widgets")
+	void ShowWidgetAndPause(UUserWidget* WidgetToShow);
+
+	UFUNCTION(Category = "Widgets")
+	void HideWidgetAndUnpause(UUserWidget* WidgetToHide);
+
 	// Input responses
 
 	UFUNCTION(Category = "Input Response")
@@ -198,31 +272,60 @@ private:
 	FVector FindLaunchFromWallVelocity() const;
 	
 	// Sliding
+
 	UFUNCTION(Category = "Slide")
 	void Sliding(float Speed);
+
+	// Grapple
+
+	UFUNCTION(Category = "Grapple")
+	void UseGrapple();
+
+	UFUNCTION(Category = "Grapple")
+	void GrappleFirst();
+
+	UFUNCTION(Category = "Grapple")
+	void GrappleSecond();
+
+	UFUNCTION(Category = "Grapple")
+	void GrappleDragUpdate(float TimelineVal);
+
+	UFUNCTION(Category = "Grapple")
+	bool FindGrappleTarget();
 
 	/////////////VARIABLES//////////////
 
 	UPROPERTY()
 	UW_HUD* HudWidget;
+	UPROPERTY()
+	UUserWidget* PauseWidget;
+	UPROPERTY()
+	UUserWidget* MainMenu;
+	UPROPERTY()
+	UUserWidget* DeathWidget;
+	UPROPERTY()
+	UUserWidget* FloorCompletedWidget;
+	UPROPERTY()
+	UUserWidget* TimeWidget;
 
 	FVector LadderForwardVector;
 	FVector WallRunDirection;
 	
 	TEnumAsByte<WallRunSide> CurrentSide;
 
-	// Variables to save default movement settings
-	
-	float DefaultCrouchSpeed;
-	float DefaultAirControl;
-	float DefaultGravityScale;
-	float DefaultAcceleration;
-
 	float YWalkAxis;
 	float SlideSpeedDifference;
-	
-	bool HoldingCrouch;
-	bool bIsGrappling;
+	float GrappleBeginningDistance;
+
+	bool bCanUseGrapple = true;
+	bool bHoldingCrouch;
+	bool bGrappleCanSecondUse;
+	bool bGrappleArrived;
+
+	UPROPERTY()
+	AGrappleLine* GrappleLine;
+	UPROPERTY()
+	USphereComponent* GrappleTargetSphereColl;
 
 	// Timers
 
@@ -235,10 +338,14 @@ private:
 
 	FOnTimelineFloat CameraTiltInterp;
 	FOnTimelineFloat SlideSpeedInterp;
+	FOnTimelineFloat GrappleDragSpeedInterp;
 
 	UPROPERTY()
 	UTimelineComponent* CameraTiltTimeline;
 
 	UPROPERTY()
 	UTimelineComponent* SlideSpeedTimeline;
+
+	UPROPERTY()
+	UTimelineComponent* GrappleDragTimeline;
 };

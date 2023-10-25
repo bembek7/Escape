@@ -28,7 +28,10 @@ void AGrappleLine::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	// developing the grapple from player to a grapple target
-	if (bDeveloping)GrappleLine->SetWorldLocation(FMath::VInterpTo(GrappleLine->GetComponentLocation(), GrappleTarget, DeltaTime, DevelopingSpeed));
+	if (bDeveloping)
+	{
+		GrappleLine->SetWorldLocation(FMath::VInterpTo(GrappleLine->GetComponentLocation(), GrappleTarget, DeltaTime, DevelopingSpeed));
+	}
 }
 
 void AGrappleLine::GrappleOn(const FVector& Target)

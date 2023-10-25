@@ -27,6 +27,7 @@ APlayerBase::APlayerBase()
     GrappleDragSpeedInterp.BindUFunction(this, FName("GrappleDragUpdate"));
 
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerBase::OnHit);
+    GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerBase::OnBeginOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -177,6 +178,17 @@ void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
         CurrentSide = FindRunSide(Hit.ImpactNormal);
         WallRunDirection = FindRunDirection(Hit.ImpactNormal, CurrentSide);
         BeginWallRun();
+    }
+}
+
+void APlayerBase::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherComp->ComponentHasTag(JumpPadTag))
+    {
+        float LaunchForce;
+        float ForceMultiplier = 0.6f;
+        LaunchForce = FMath::Abs(MovementComponent->Velocity.Z) * ForceMultiplier + JumpPadAdditionalForce;
+        LaunchCharacter(FVector(0, 0, LaunchForce), false, true); 
     }
 }
 

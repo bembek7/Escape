@@ -52,6 +52,9 @@ protected:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit);
 
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	// Crouch / Slide
 
 	UFUNCTION(BlueprintCallable, Category = "Crouch/Slide")
@@ -185,6 +188,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
+
+	// Jump Pad
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Jump Pad")
+	FName JumpPadTag = FName("JumpPad");
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Jump Pad")
+	int JumpPadAdditionalForce = 1000;
 
 	// Variables to save default movement settings
 

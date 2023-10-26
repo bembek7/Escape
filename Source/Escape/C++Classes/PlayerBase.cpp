@@ -67,16 +67,9 @@ void APlayerBase::BeginPlay()
         GrappleDragTimeline->AddInterpFloat(GrappleDragForceCurve, GrappleDragSpeedInterp, FName("Speed"), FName("GrappleDragSpeed"));
     }
 
-    if (HudWidgetClass)
-    {
-        HudWidget = CreateWidget<UW_HUD>(PlayerController, HudWidgetClass);
-        HudWidget->AddToViewport();
-    }
-
-    if (PauseWidgetClass)
-    {
-        PauseWidget = CreateWidget<UUserWidget>(PlayerController, PauseWidgetClass);
-    }
+    CreateWidgets();
+    HudWidget->AddToPlayerScreen();
+    // ShowWidgetToFocus(MainMenu);
 }
 
 // Called every frame
@@ -200,6 +193,39 @@ bool APlayerBase::CanWallBeRunOn(const FVector& WallNormal)
     return WallNormal.Z >= WallAcceptedAngle && WallAngleRunnable;
 }
 
+void APlayerBase::CreateWidgets()
+{
+    if (HudWidgetClass)
+    {
+        HudWidget = CreateWidget<UW_HUD>(PlayerController, HudWidgetClass);
+    }
+
+    if (PauseWidgetClass)
+    {
+        PauseWidget = CreateWidget<UUserWidget>(PlayerController, PauseWidgetClass);
+    }
+
+    if (MainMenuClass)
+    {
+        MainMenu = CreateWidget<UUserWidget>(PlayerController, MainMenuClass);
+    }
+
+    if (DeathWidgetClass)
+    {
+        DeathWidget = CreateWidget<UUserWidget>(PlayerController, DeathWidgetClass);
+    }
+
+    if (FloorCompletedWidgetClass)
+    {
+        FloorCompletedWidget = CreateWidget<UUserWidget>(PlayerController, FloorCompletedWidgetClass);
+    }
+
+    if (TimeWidgetClass)
+    {
+        TimeWidget = CreateWidget<UUserWidget>(PlayerController, TimeWidgetClass);
+    }
+}
+
 void APlayerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow)
 {
     WidgetToShow->AddToPlayerScreen();
@@ -224,6 +250,35 @@ void APlayerBase::HideWidgetAndUnpause(UUserWidget* WidgetToHide)
 {
     HideFocusedWidget(WidgetToHide);
     UGameplayStatics::SetGamePaused(GetWorld(), false);
+}
+
+void APlayerBase::EnteredLadder(const FVector& LadderForward)
+{
+    if (bCanEnterLadder)
+    {
+        bCanEnterLadder = false;
+        LadderForwardVector = LadderForward;
+        bIsOnLadder = true;
+        MovementComponent->SetMovementMode(EMovementMode::MOVE_Flying);
+        MovementComponent->StopMovementImmediately();
+    }
+}
+
+void APlayerBase::ExittedLadder()
+{
+    bIsOnLadder = false;
+    if (!bIsGrappling)
+    {
+        MovementComponent->SetMovementMode(EMovementMode::MOVE_Walking);
+    }
+    float LadderCooldown = 0.2f;
+    GetWorldTimerManager().SetTimer(LadderCooldownHandle, [this]() { bCanEnterLadder = true; }, LadderCooldown, false);
+}
+
+void APlayerBase::ExitLadderBoost()
+{
+    int LaunchForce = 50;
+    LaunchCharacter(GetActorUpVector() * LaunchForce, false, false);
 }
 
 void APlayerBase::PauseUnpause()
@@ -297,6 +352,7 @@ void APlayerBase::InputJump()
     {
         int LaunchFromLadderForce = 1000;
         LaunchCharacter(LadderForwardVector * LaunchFromLadderForce, false, false);
+        ExittedLadder();
     }
     else if (bIsWallRunning)
     {
@@ -579,7 +635,7 @@ void APlayerBase::GrappleFirst()
     bIsGrappling = true;
     bCanUseGrapple = true;
     MovementComponent->SetMovementMode(EMovementMode::MOVE_Flying);
-    MovementComponent->Velocity = FVector(0, 0, 0);
+    MovementComponent->StopMovementImmediately();
     PlayerController->SetIgnoreMoveInput(true);
     GrappleBeginningDistance = UKismetMathLibrary::Vector_Distance(GetActorLocation(), GrappleTarget->GetActorLocation());
     GrappleDragTimeline->PlayFromStart();

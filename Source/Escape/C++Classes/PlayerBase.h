@@ -42,9 +42,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
 	void PauseUnpause();
+
+	// Ladder
+
+	UFUNCTION(BlueprintCallable, Category = "Ladder")
+	void EnteredLadder(const FVector& LadderForward);
+
+	UFUNCTION(BlueprintCallable, Category = "Ladder")
+	void ExittedLadder();
+
+	UFUNCTION(BlueprintCallable, Category = "Ladder")
+	void ExitLadderBoost();
 
 protected:
 	/////////////FUNCTIONS//////////////
@@ -106,9 +116,6 @@ protected:
 	float SlidingOffAngle = 15;
 
 	// Wall run
-
-	UPROPERTY(BlueprintReadOnly, Category = "Wall Run")
-	bool bIsOnLadder;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Wall Run")
 	bool bIsWallRunning;
@@ -189,6 +196,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
 
+	// Ladder
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ladder")
+	bool bCanEnterLadder = true;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Ladder")
+	bool bIsOnLadder = false;
+
 	// Jump Pad
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Jump Pad")
@@ -212,6 +227,9 @@ private:
 	/////////////FUNCTIONS//////////////
 	
 	// Widgets
+
+	UFUNCTION(Category = "Widgets")
+	void CreateWidgets();
 
 	UFUNCTION(Category = "Widgets")
 	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
@@ -340,6 +358,7 @@ private:
 
 	// Timers
 
+	FTimerHandle LadderCooldownHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle ScanDashIcon;
 	FTimerHandle ResetDashIconScan;

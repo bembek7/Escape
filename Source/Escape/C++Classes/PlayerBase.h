@@ -77,28 +77,28 @@ protected:
 
 	// Enhaced input
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	TSoftObjectPtr<UInputMappingContext> InputMappingContext;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IAWalk;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IAJump;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IALook;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IADash;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IACrouchSlide;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IAPause;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	UInputAction* IAGrapple;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -110,7 +110,7 @@ protected:
 	// Sliding off
 
 	UPROPERTY(BlueprintReadOnly, Category = "SlidingOff")
-	bool bIsSlidingOff;
+	bool bIsSlidingOff = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SlidingOff")
 	float SlidingOffAngle = 15;
@@ -118,36 +118,36 @@ protected:
 	// Wall run
 
 	UPROPERTY(BlueprintReadOnly, Category = "Wall Run")
-	bool bIsWallRunning;
+	bool bIsWallRunning = false;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wall Run")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wall Run")
 	FName WallRunTag = FName("WallToRun");
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wall Run")
+	UPROPERTY(EditDefaultsOnly, Category = "Wall Run")
 	UCurveFloat* CameraTiltCurve;		
 
 	// Slide
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Slide")
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	UCurveFloat* SlideSpeedCurve;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	int SpeedNeededToSlide = 1100;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide")
+	UPROPERTY(EditDefaultsOnly, Category = "Slide")
 	int SlideAdditionalSpeed = 450;
 
 	// Dash
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash")
+	UPROPERTY(EditDefaultsOnly, Category = "Dash")
 	float DashCooldown = 2.f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Dash")
-	bool bDashOnCooldown;
+	bool bDashOnCooldown = false;
 
 	// Grapple
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grapple")
+	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
 	TSubclassOf<AGrappleLine>GrappleLineClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Grapple")
@@ -156,16 +156,16 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Grapple")
 	bool bIsGrappling;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grapple")
+	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
 	int GrappleImpulseMultiplier = 500;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grapple")
+	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
 	int GrappleForceMultiplier = 16000;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grapple")
+	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
 	int GrappleRange = 4250;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grapple")
+	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
 	UCurveFloat* GrappleDragForceCurve;
 
 	// Settings
@@ -178,27 +178,27 @@ protected:
 
 	// Widgets, blueprint children will set the widgets classes
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UW_HUD>HudWidgetClass; 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget>PauseWidgetClass; // blueprint child will set the widget class
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget>MainMenuClass; // blueprint child will set the widget class
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget>DeathWidgetClass; // blueprint child will set the widget class
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget>TimeWidgetClass; // blueprint child will set the widget class
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
 
 	// Ladder
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ladder")
+	UPROPERTY(BlueprintReadWrite, Category = "Ladder")
 	bool bCanEnterLadder = true;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Ladder")
@@ -206,10 +206,10 @@ protected:
 
 	// Jump Pad
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Jump Pad")
+	UPROPERTY(EditDefaultsOnly, Category = "Jump Pad")
 	FName JumpPadTag = FName("JumpPad");
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Jump Pad")
+	UPROPERTY(EditDefaultsOnly,  Category = "Jump Pad")
 	int JumpPadAdditionalForce = 1000;
 
 	// Variables to save default movement settings
@@ -347,7 +347,7 @@ private:
 	float GrappleBeginningDistance;
 
 	bool bCanUseGrapple = true;
-	bool bHoldingCrouch;
+	bool bHoldingCrouch = false;
 	bool bGrappleCanSecondUse;
 	bool bGrappleArrived;
 

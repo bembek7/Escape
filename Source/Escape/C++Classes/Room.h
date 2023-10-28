@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../../../../../../../../Program Files/Epic Games/UE_5.1/Engine/Plugins/Runtime/CableComponent/Source/CableComponent/Classes/CableComponent.h"
-#include "GrappleLine.generated.h"
+#include "LevelExit.h"
+#include "Room.generated.h"
 
 UCLASS()
-class ESCAPE_API AGrappleLine : public AActor
+class ESCAPE_API ARoom : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AGrappleLine();
+	ARoom();
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,17 +25,24 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void GrappleOn(const FVector& Target);
+	int GetLeftTurns();
+
 	UFUNCTION(BlueprintCallable)
-	void GrappleOff();
+	int GetRightTurns();
+
+	UFUNCTION()
+	FTransform GetExitTransform();
 
 protected:
+	UPROPERTY(EditDefaultsOnly)
+	int LeftTurns;
+
+	UPROPERTY(EditDefaultsOnly)
+	int RightTurns;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UCableComponent* GrappleLine;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DevelopingSpeed = 4.5f;
+	ULevelExit* LevelExit;
 private:
-	FVector GrappleTarget;
-	bool bDeveloping;
-	FTimerHandle LineDevelopingTimer;
+	UPROPERTY()
+	USceneComponent* DefaultRootComponent;
 };

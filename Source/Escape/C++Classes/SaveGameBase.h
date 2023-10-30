@@ -18,15 +18,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SaveFloorCount(int32 NewFloorCount);
 
-	UFUNCTION(BlueprintCallable)
-	int32 GetBestFloorCount();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetBestFloorCount() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SaveTime(int32 NewTime);
 
-	UFUNCTION(BlueprintCallable)
-	int32 GetBestTime();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetBestTime() const;
 
+	UPROPERTY(BlueprintReadWrite)
 	bool bPlayedTutorial = false;
 private:
 	int32 BestFloorCount = 0;

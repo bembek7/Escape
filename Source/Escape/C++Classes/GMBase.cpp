@@ -36,6 +36,22 @@ void AGMBase::FloorCompleted()
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 }
 
+bool AGMBase::PlayedTutorial() const
+{
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	return SaveObject->bPlayedTutorial;
+}
+
+FString AGMBase::GetSaveSlotName() const
+{
+	return SaveSlotName;
+}
+
+int32 AGMBase::GetSaveIndex() const
+{
+	return SaveIndex;
+}
+
 void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
 {
 	;

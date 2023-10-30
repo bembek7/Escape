@@ -5,7 +5,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/PlayerController.h"
 #include "Math/Vector.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -16,7 +15,7 @@ APlayerBase::APlayerBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+    // Creating timelines
     CameraTiltTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("CameraTiltTimeline"));
     CameraTiltInterp.BindUFunction(this, FName("CameraTilt"));
 
@@ -26,6 +25,7 @@ APlayerBase::APlayerBase()
     GrappleDragTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("GrappleDragTimeline"));
     GrappleDragSpeedInterp.BindUFunction(this, FName("GrappleDragUpdate"));
 
+    // Binding on hit on overlap
     GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerBase::OnHit);
     GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayerBase::OnBeginOverlap);
 }
@@ -34,7 +34,8 @@ APlayerBase::APlayerBase()
 void APlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
-    PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    PlayerController = Cast<APlayerControllerBase>(GetController());
+    // Adding Mapping Context
     if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
     {
         if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
@@ -52,6 +53,7 @@ void APlayerBase::BeginPlay()
     DefaultGravityScale = MovementComponent->GravityScale;
     DefaultAcceleration = MovementComponent->MaxAcceleration;
 
+    //Adding interps to timelines
     if (CameraTiltCurve)
     {
         CameraTiltTimeline->AddInterpFloat(CameraTiltCurve, CameraTiltInterp, FName("Degrees"), FName("Tilt"));
@@ -66,16 +68,14 @@ void APlayerBase::BeginPlay()
     {
         GrappleDragTimeline->AddInterpFloat(GrappleDragForceCurve, GrappleDragSpeedInterp, FName("Speed"), FName("GrappleDragSpeed"));
     }
-
-    CreateWidgets();
-    HudWidget->AddToPlayerScreen();
-    // ShowWidgetToFocus(MainMenu);
 }
 
 // Called every frame
 void APlayerBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+    // Slide off check
     AActor* Floor = MovementComponent->CurrentFloor.HitResult.GetActor();
     FVector ImpactNormal = MovementComponent->CurrentFloor.HitResult.ImpactNormal;
     if (Floor) // Checking if player should slide off the floor he is standing on or if he should stop sliding
@@ -158,7 +158,7 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
         if (IAPause)
         {
-            PlayerEnhancedInputComponent->BindAction(IAPause, ETriggerEvent::Started, this, &APlayerBase::PauseUnpause);
+            PlayerEnhancedInputComponent->BindAction(IAPause, ETriggerEvent::Started, this, &APlayerBase::PauseCalled);
         }
     }
 }
@@ -193,65 +193,6 @@ bool APlayerBase::CanWallBeRunOn(const FVector& WallNormal)
     return WallNormal.Z >= WallAcceptedAngle && WallAngleRunnable;
 }
 
-void APlayerBase::CreateWidgets()
-{
-    if (HudWidgetClass)
-    {
-        HudWidget = CreateWidget<UW_HUD>(PlayerController, HudWidgetClass);
-    }
-
-    if (PauseWidgetClass)
-    {
-        PauseWidget = CreateWidget<UUserWidget>(PlayerController, PauseWidgetClass);
-    }
-
-    if (MainMenuClass)
-    {
-        MainMenu = CreateWidget<UUserWidget>(PlayerController, MainMenuClass);
-    }
-
-    if (DeathWidgetClass)
-    {
-        DeathWidget = CreateWidget<UUserWidget>(PlayerController, DeathWidgetClass);
-    }
-
-    if (FloorCompletedWidgetClass)
-    {
-        FloorCompletedWidget = CreateWidget<UUserWidget>(PlayerController, FloorCompletedWidgetClass);
-    }
-
-    if (TimeWidgetClass)
-    {
-        TimeWidget = CreateWidget<UUserWidget>(PlayerController, TimeWidgetClass);
-    }
-}
-
-void APlayerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow)
-{
-    WidgetToShow->AddToPlayerScreen();
-    PlayerController->SetInputMode(FInputModeUIOnly());
-    PlayerController->bShowMouseCursor = true;
-}
-
-void APlayerBase::HideFocusedWidget(UUserWidget* WidgetToHide)
-{
-    WidgetToHide->RemoveFromParent();
-    PlayerController->SetInputMode(FInputModeGameOnly());
-    PlayerController->bShowMouseCursor = false;
-}
-
-void APlayerBase::ShowWidgetAndPause(UUserWidget* WidgetToShow)
-{
-    ShowWidgetToFocus(WidgetToShow);
-    UGameplayStatics::SetGamePaused(GetWorld(), true);
-}
-
-void APlayerBase::HideWidgetAndUnpause(UUserWidget* WidgetToHide)
-{
-    HideFocusedWidget(WidgetToHide);
-    UGameplayStatics::SetGamePaused(GetWorld(), false);
-}
-
 void APlayerBase::EnteredLadder(const FVector& LadderForward)
 {
     if (bCanEnterLadder)
@@ -279,21 +220,6 @@ void APlayerBase::ExitLadderBoost()
 {
     uint32 LaunchForce = 50;
     LaunchCharacter(GetActorUpVector() * LaunchForce, false, false);
-}
-
-void APlayerBase::PauseUnpause()
-{
-    if (PauseWidget)
-    {
-        if(!PauseWidget->IsVisible())
-        {
-            ShowWidgetAndPause(PauseWidget);
-        }
-        else
-        {
-            HideWidgetAndUnpause(PauseWidget);
-        }
-    }
 }
 
 void APlayerBase::Walk(const FInputActionValue& IAValue)
@@ -385,8 +311,8 @@ void APlayerBase::Dash() // Dash ability
         }
         LaunchCharacter(GetControlRotation().Vector() * DashForce, true, true);
         
-        GetWorldTimerManager().SetTimer(ScanDashIcon, [this]() { HudWidget->UpdateDashIconScan((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
-        GetWorldTimerManager().SetTimer(ResetDashIconScan, [this]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); HudWidget->UpdateDashIconScan(0.f); }, DashCooldown, false);
+        GetWorldTimerManager().SetTimer(ScanDashIcon, [this]() { PlayerController->UpdateDashIconScanHudWidget((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
+        GetWorldTimerManager().SetTimer(ResetDashIconScan, [this]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); PlayerController->UpdateDashIconScanHudWidget(0.f); }, DashCooldown, false);
 
         GetWorldTimerManager().SetTimer(DashTimerHandle, [this]() {bDashOnCooldown = false; }, DashCooldown, false);
     }
@@ -423,6 +349,11 @@ void APlayerBase::CrouchSlideCompleted()
         UnCrouch();
         MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
     }
+}
+
+void APlayerBase::PauseCalled()
+{
+    PlayerController->PauseUnpause();
 }
 
 void APlayerBase::CrouchSlide() // if player is fast enough we initiate slide if not we initiate normal crouch
@@ -587,7 +518,7 @@ FVector APlayerBase::FindLaunchFromWallVelocity() const
             break;
     }
     float LaunchForceMultiplier = 0.55f;
-    FVector AdditionalUpForce = FVector(0, 0, 150);
+    FVector AdditionalUpForce = FVector(0, 0, 200);
     return FVector((FVector::CrossProduct(WallRunDirection, SideToJumpFrom) + FVector(0, 0, 1)) * MovementComponent->JumpZVelocity * LaunchForceMultiplier + AdditionalUpForce);
 }
 

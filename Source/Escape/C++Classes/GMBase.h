@@ -26,6 +26,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Rooms")
 	void FloorCompleted();
 
+	UFUNCTION()
+	bool PlayedTutorial() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Rooms")
+	FString GetSaveSlotName() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Rooms")
+	int32 GetSaveIndex() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	uint32 NumberOfRoomsToSpawn = 5;
@@ -37,6 +46,7 @@ protected:
 	FString SaveSlotName = "DefaultSave";
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	TSubclassOf<ARoom>FinalRoomClass;
+
 private:
 	UFUNCTION()
 	void PlayerDestroyed(AActor* DestroyedPlayer);

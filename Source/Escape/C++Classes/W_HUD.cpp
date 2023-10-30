@@ -16,7 +16,7 @@ void UW_HUD::NativeConstruct()
 	}
 }
 
-void UW_HUD::UpdateDashIconScan(float Percent = 0.f) // scanning the dash icon
+void UW_HUD::UpdateDashIconScan(float Percent) // scanning the dash icon
 {
 	if (DashIconMaterial)
 	{

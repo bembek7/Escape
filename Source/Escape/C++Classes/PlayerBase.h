@@ -10,9 +10,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/TimelineComponent.h"
 #include "TimerManager.h"
-#include "W_HUD.h"
 #include "GrappleLine.h"
 #include "Components/SphereComponent.h"
+#include "PlayerControllerBase.h"
+
 #include "PlayerBase.generated.h"
 
 UENUM()
@@ -41,9 +42,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void PauseUnpause();
 
 	// Ladder
 
@@ -105,7 +103,7 @@ protected:
 	UCharacterMovementComponent* MovementComponent;
 
 	UPROPERTY(BlueprintReadOnly)
-	APlayerController* PlayerController;
+	APlayerControllerBase* PlayerController;
 
 	// Sliding off
 
@@ -176,26 +174,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	float MouseYSensitivity = 0.6f;	
 
-	// Widgets, blueprint children will set the widgets classes
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UW_HUD>HudWidgetClass; 
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>PauseWidgetClass; // blueprint child will set the widget class
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>MainMenuClass; // blueprint child will set the widget class
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>DeathWidgetClass; // blueprint child will set the widget class
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>TimeWidgetClass; // blueprint child will set the widget class
-
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
-
 	// Ladder
 
 	UPROPERTY(BlueprintReadWrite, Category = "Ladder")
@@ -226,23 +204,6 @@ protected:
 private:
 	/////////////FUNCTIONS//////////////
 	
-	// Widgets
-
-	UFUNCTION(Category = "Widgets")
-	void CreateWidgets();
-
-	UFUNCTION(Category = "Widgets")
-	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
-
-	UFUNCTION(Category = "Widgets")
-	void HideFocusedWidget(UUserWidget* WidgetToHide);
-
-	UFUNCTION(Category = "Widgets")
-	void ShowWidgetAndPause(UUserWidget* WidgetToShow);
-
-	UFUNCTION(Category = "Widgets")
-	void HideWidgetAndUnpause(UUserWidget* WidgetToHide);
-
 	// Input responses
 
 	UFUNCTION(Category = "Input Response")
@@ -265,6 +226,9 @@ private:
 
 	UFUNCTION(Category = "Input Response")
 	void CrouchSlideCompleted();
+
+	UFUNCTION(Category = "Input Response")
+	void PauseCalled();
 
 	// Sliding off
 
@@ -323,19 +287,6 @@ private:
 	bool FindGrappleTarget();
 
 	/////////////VARIABLES//////////////
-
-	UPROPERTY()
-	UW_HUD* HudWidget;
-	UPROPERTY()
-	UUserWidget* PauseWidget;
-	UPROPERTY()
-	UUserWidget* MainMenu;
-	UPROPERTY()
-	UUserWidget* DeathWidget;
-	UPROPERTY()
-	UUserWidget* FloorCompletedWidget;
-	UPROPERTY()
-	UUserWidget* TimeWidget;
 
 	FVector LadderForwardVector;
 	FVector WallRunDirection;

@@ -8,7 +8,7 @@ void USaveGameBase::SaveFloorCount(int32 NewFloorCount)
 	BestFloorCount = FMath::Max(BestFloorCount, NewFloorCount);
 }
 
-int32 USaveGameBase::GetBestFloorCount()
+int32 USaveGameBase::GetBestFloorCount() const
 {
 	return BestFloorCount;
 }
@@ -18,7 +18,7 @@ void USaveGameBase::SaveTime(int32 NewTime)
 	BestTime = FMath::Max(BestTime, NewTime);
 }
 
-int32 USaveGameBase::GetBestTime()
+int32 USaveGameBase::GetBestTime() const
 {
 	return BestTime;
 }

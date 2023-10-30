@@ -93,7 +93,7 @@ void APlayerBase::Tick(float DeltaTime)
             float WorldRollDegrees;
             float GeneralAngle = UKismetMathLibrary::FMax(UKismetMathLibrary::Abs(RelativePitchDegrees), UKismetMathLibrary::Abs(RelativeRollDegrees));
             float SlideOffSpeedMultiplier = 0.5f;
-            int SlideOffAcceleration = 4000;
+            uint32 SlideOffAcceleration = 4000;
             UKismetMathLibrary::GetSlopeDegreeAngles(FVector(0, 1, 0), ImpactNormal, FVector(0, 0, 1), WorldPitchDegrees, WorldRollDegrees);
             bIsSlidingOff = true;
             MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed * GeneralAngle * SlideOffSpeedMultiplier;
@@ -277,7 +277,7 @@ void APlayerBase::ExittedLadder()
 
 void APlayerBase::ExitLadderBoost()
 {
-    int LaunchForce = 50;
+    uint32 LaunchForce = 50;
     LaunchCharacter(GetActorUpVector() * LaunchForce, false, false);
 }
 
@@ -350,7 +350,7 @@ void APlayerBase::InputJump()
     StopCrouching();
     if (bIsOnLadder)
     {
-        int LaunchFromLadderForce = 1000;
+        uint32 LaunchFromLadderForce = 1000;
         LaunchCharacter(LadderForwardVector * LaunchFromLadderForce, false, false);
         ExittedLadder();
     }
@@ -374,7 +374,7 @@ void APlayerBase::Dash() // Dash ability
     if (!bDashOnCooldown && !bIsGrappling)
     {
         bDashOnCooldown = true;
-        int DashForce;
+        uint32 DashForce;
         if (MovementComponent->IsFalling())
         {
             DashForce = 2550; // Dash is stronger if player is not in air
@@ -490,7 +490,7 @@ void APlayerBase::UpdateWallRun() // wall run function called every tick when wa
             SideToTrace = FVector(0, 0, 1);
             break;
     }
-    int TraceLength = 200;
+    uint32 TraceLength = 200;
     FVector TraceEnd = GetActorLocation() + FVector::CrossProduct(WallRunDirection, SideToTrace) * TraceLength;
     bool bHitWall = GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), TraceEnd, ECC_Visibility, FCollisionQueryParams(FName(NAME_None), false, this));
     if (bHitWall)
@@ -515,14 +515,14 @@ void APlayerBase::UpdateWallRun() // wall run function called every tick when wa
 
 bool APlayerBase::CanWallRun(const FVector& SurfaceNormal)
 {
-    int MinVelocity = 200;
+    uint32 MinVelocity = 200;
     float PlayerVel = UKismetMathLibrary::Quat_UnrotateVector(FQuat(GetActorRotation()), GetVelocity()).X;
     return !bIsWallRunning && MovementComponent->IsFalling() && PlayerVel > MinVelocity && YWalkAxis >= 0 && CanWallBeRunOn(SurfaceNormal);
 }
 
 void APlayerBase::CameraTilt(float TimelineVal) // when wallrunning camera tilts a little bit
 {
-    int CameraTiltSide;
+    int32 CameraTiltSide;
     switch (CurrentSide)
     {
         case Left:

@@ -3,22 +3,22 @@
 
 #include "SaveGameBase.h"
 
-void USaveGameBase::SaveFloorCount(int NewFloorCount)
+void USaveGameBase::SaveFloorCount(int32 NewFloorCount)
 {
 	BestFloorCount = FMath::Max(BestFloorCount, NewFloorCount);
 }
 
-int USaveGameBase::GetBestFloorCount()
+int32 USaveGameBase::GetBestFloorCount()
 {
 	return BestFloorCount;
 }
 
-void USaveGameBase::SaveTime(int NewTime)
+void USaveGameBase::SaveTime(int32 NewTime)
 {
 	BestTime = FMath::Max(BestTime, NewTime);
 }
 
-int USaveGameBase::GetBestTime()
+int32 USaveGameBase::GetBestTime()
 {
 	return BestTime;
 }

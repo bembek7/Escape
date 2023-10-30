@@ -16,19 +16,19 @@ class ESCAPE_API USaveGameBase : public USaveGame
 	
 public:
 	UFUNCTION(BlueprintCallable)
-	void SaveFloorCount(int NewFloorCount);
+	void SaveFloorCount(int32 NewFloorCount);
 
 	UFUNCTION(BlueprintCallable)
-	int GetBestFloorCount();
+	int32 GetBestFloorCount();
 
 	UFUNCTION(BlueprintCallable)
-	void SaveTime(int NewTime);
+	void SaveTime(int32 NewTime);
 
 	UFUNCTION(BlueprintCallable)
-	int GetBestTime();
+	int32 GetBestTime();
 
 	bool bPlayedTutorial = false;
 private:
-	int BestFloorCount = 0;
-	int BestTime = 9999999;
+	int32 BestFloorCount = 0;
+	int32 BestTime = 9999999;
 };

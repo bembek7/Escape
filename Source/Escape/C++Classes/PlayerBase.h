@@ -132,10 +132,10 @@ protected:
 	UCurveFloat* SlideSpeedCurve;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Slide")
-	int SpeedNeededToSlide = 1100;
+	uint32 SpeedNeededToSlide = 1100;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Slide")
-	int SlideAdditionalSpeed = 450;
+	uint32 SlideAdditionalSpeed = 450;
 
 	// Dash
 
@@ -157,13 +157,13 @@ protected:
 	bool bIsGrappling;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
-	int GrappleImpulseMultiplier = 500;
+	uint32 GrappleImpulseMultiplier = 500;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
-	int GrappleForceMultiplier = 16000;
+	uint32 GrappleForceMultiplier = 16000;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
-	int GrappleRange = 4250;
+	uint32 GrappleRange = 4250;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grapple")
 	UCurveFloat* GrappleDragForceCurve;
@@ -210,7 +210,7 @@ protected:
 	FName JumpPadTag = FName("JumpPad");
 
 	UPROPERTY(EditDefaultsOnly,  Category = "Jump Pad")
-	int JumpPadAdditionalForce = 1000;
+	uint32 JumpPadAdditionalForce = 1000;
 
 	// Variables to save default movement settings
 

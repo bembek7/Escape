@@ -25,20 +25,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	int GetLeftTurns();
+	int32 GetLeftTurns();
 
 	UFUNCTION(BlueprintCallable)
-	int GetRightTurns();
+	int32 GetRightTurns();
 
 	UFUNCTION()
 	FTransform GetExitTransform();
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	int LeftTurns;
+	uint32 LeftTurns;
 
 	UPROPERTY(EditDefaultsOnly)
-	int RightTurns;
+	uint32 RightTurns;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ULevelExit* LevelExit;

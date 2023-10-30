@@ -28,12 +28,12 @@ void ARoom::Tick(float DeltaTime)
 
 }
 
-int ARoom::GetLeftTurns()
+int32 ARoom::GetLeftTurns()
 {
 	return LeftTurns;
 }
 
-int ARoom::GetRightTurns()
+int32 ARoom::GetRightTurns()
 {
 	return RightTurns;
 }

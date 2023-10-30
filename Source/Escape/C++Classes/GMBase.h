@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Room.h"
-
+#include "GameFramework/Character.h"
 
 #include "GMBase.generated.h"
 /**
@@ -23,24 +23,48 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Rooms")
+	void FloorCompleted();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
-	int NumberOfRoomsToSpawn;
+	uint32 NumberOfRoomsToSpawn = 5;
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	TArray<TSubclassOf<ARoom>>RoomsClasses;
 	UPROPERTY(EditDefaultsOnly, Category = "Save");
-	int SaveIndex = 0;
+	uint32 SaveIndex = 0;
 	UPROPERTY(EditDefaultsOnly, Category = "Save");
 	FString SaveSlotName = "DefaultSave";
-	
+	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
+	TSubclassOf<ARoom>FinalRoomClass;
 private:
+	UFUNCTION()
+	void PlayerDestroyed(AActor* DestroyedPlayer);
+
+	UFUNCTION(Category = "Rooms")
+	void ClearRooms();
+
+	UFUNCTION(Category = "Rooms")
+	TSubclassOf<ARoom> GetRandomRoomClass();
+	
+	UFUNCTION(Category = "Rooms")
+	uint32 GetRandomRoomIndex(); // gets random room index, randomizing is make that so rooms wouldn't reapet and appear regularly  
+
+	UFUNCTION(Category = "Rooms")
+	void UpdateChances(uint32 ChosenIndex); // updating chances after picking the room to spawn
+
 	UFUNCTION(Category = "Rooms")
 	void GenerateEqualChances();
 
-	TArray<int>RoomsChancesOfSpawning;
-	TArray<TSubclassOf<ARoom>*>SpawnedRooms;
+	UFUNCTION(Category = "Rooms")
+	void SpawnRooms(uint32 RoomsToSpawn, const FTransform& LastExitTransform);
+
+	UFUNCTION(Category = "Rooms")
+	void SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform);
+
+	TArray<uint32>RoomsChancesOfSpawning;
+	TArray<ARoom*>SpawnedRooms;
 	FTransform LastRoomExitTransform;
-	int SpawnedLeftTurns = 0;
-	int SpawnedRightTurns = 0;
+	uint32 SpawnedLeftTurns = 0;
+	uint32 SpawnedRightTurns = 0;
 };

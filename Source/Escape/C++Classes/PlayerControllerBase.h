@@ -26,14 +26,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
 	void PauseUnpause();
 
-	UFUNCTION(Category = "Widgets")
 	void UpdateDashIconScanHudWidget(float Percent);
 
 	UFUNCTION(BlueprintCallable)
 	void TeleportToTutorial();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
 	void HideMainMenu();
+
+	void ShowTimeWidget();
+	void HideTimeWidget();
+	void ShowFloorCompletedWidget();
+
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
+	void HideFloorCompletedWidget();
 
 	UPROPERTY(BLueprintReadWrite)
 	bool bInTutorial;
@@ -61,24 +67,14 @@ protected:
 	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
 
 private:
-	UFUNCTION()
 	void DecideSpawnLocation();
 
 	// Widgets
 
-	UFUNCTION(Category = "Widgets")
 	void CreateWidgets();
-
-	UFUNCTION(Category = "Widgets")
 	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
-
-	UFUNCTION(Category = "Widgets")
 	void HideFocusedWidget(UUserWidget* WidgetToHide);
-
-	UFUNCTION(Category = "Widgets")
 	void ShowWidgetAndPause(UUserWidget* WidgetToShow);
-
-	UFUNCTION(Category = "Widgets")
 	void HideWidgetAndUnpause(UUserWidget* WidgetToHide);
 
 

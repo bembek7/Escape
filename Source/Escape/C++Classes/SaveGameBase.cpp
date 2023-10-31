@@ -15,7 +15,7 @@ int32 USaveGameBase::GetBestFloorCount() const
 
 void USaveGameBase::SaveTime(int32 NewTime)
 {
-	BestTime = FMath::Max(BestTime, NewTime);
+	BestTime = FMath::Min(BestTime, NewTime);
 }
 
 int32 USaveGameBase::GetBestTime() const

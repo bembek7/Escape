@@ -129,3 +129,23 @@ void APlayerControllerBase::HideMainMenu()
 {
     HideFocusedWidget(MainMenu);
 }
+
+void APlayerControllerBase::ShowTimeWidget()
+{
+    TimeWidget->AddToPlayerScreen();
+}
+
+void APlayerControllerBase::HideTimeWidget()
+{
+    TimeWidget->RemoveFromParent();
+}
+
+void APlayerControllerBase::ShowFloorCompletedWidget()
+{
+    ShowWidgetAndPause(FloorCompletedWidget);
+}
+
+void APlayerControllerBase::HideFloorCompletedWidget()
+{
+    HideWidgetAndUnpause(FloorCompletedWidget);
+}

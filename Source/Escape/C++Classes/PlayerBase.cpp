@@ -470,17 +470,15 @@ void APlayerBase::CameraTilt(float TimelineVal) // when wallrunning camera tilts
 
 WallRunSide APlayerBase::FindRunSide(const FVector& WallNormal)
 {
-    bool DotResult = FVector2D::DotProduct(FVector2D(WallNormal), FVector2D(GetActorRightVector())) > 0;
+    double DotResult = FVector2D::DotProduct(FVector2D(WallNormal), FVector2D(GetActorRightVector()));
     WallRunSide SideFound;
-    switch (DotResult)
+    if (DotResult < 0)
     {
-        case false:
-            SideFound = Left;
-            break;
-
-        case true:
-            SideFound = Right;
-            break;
+        SideFound = Left;
+    }
+    else
+    {
+        SideFound = Right;
     }
     return SideFound;
 }

@@ -4,7 +4,7 @@
 #include "GMBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGameBase.h"
-
+#include "PlayerControllerBase.h"
 
 AGMBase::AGMBase()
 {
@@ -18,7 +18,7 @@ AGMBase::AGMBase()
 void AGMBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	RoomsChancesOfSpawning.Init(0, RoomsClasses.Num());
 	GenerateEqualChances();
 
@@ -28,11 +28,46 @@ void AGMBase::BeginPlay()
 	PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
 }
 
+void AGMBase::FloorStarted()
+{
+	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	CurrentFloorBeat++;
+	PlayerController->ShowTimeWidget();
+	CurrentTime = 0;
+	GetWorldTimerManager().SetTimer(FloorTimer, [this](){ CurrentTime++; }, 0.01f, true);
+}
+
+void AGMBase::SetSavePlayedTutorial(bool Played)
+{
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	if (SaveObject)
+	{
+		SaveObject->bPlayedTutorial = Played;
+		UGameplayStatics::SaveGameToSlot(SaveObject, SaveSlotName, SaveIndex);
+	}
+}
+
+int32 AGMBase::GetSavedTime() const
+{
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	return SaveObject->GetBestTime();
+}
+
+int32 AGMBase::GetSavedFloorBeat() const
+{
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	return SaveObject->GetBestFloorCount();
+}
+
 void AGMBase::FloorCompleted()
 {
+	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	SpawnedLeftTurns = 0;
 	SpawnedRightTurns = 0;
-	// Timer Stuff
+	PlayerController->HideTimeWidget();
+	SaveScore();
+	PlayerController->ShowFloorCompletedWidget();
+	GetWorldTimerManager().ClearTimer(FloorTimer);
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 }
 
@@ -42,14 +77,43 @@ bool AGMBase::PlayedTutorial() const
 	return SaveObject->bPlayedTutorial;
 }
 
-FString AGMBase::GetSaveSlotName() const
+FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const
 {
-	return SaveSlotName;
+	uint32 HundredthsOfSeconds;
+	uint32 TensOfHundredthsOfSeconds;
+	uint32 Seconds;
+	uint32 TensOfSeconds;
+	uint32 Minutes;
+	uint32 TensOfMinutes;
+	HundredthsOfSeconds = TimeInHundredthsOfSeconds % 10;
+	TensOfHundredthsOfSeconds = TimeInHundredthsOfSeconds % 100 / 10;
+	Seconds = TimeInHundredthsOfSeconds % 1000 / 100;
+	TensOfSeconds = TimeInHundredthsOfSeconds % 6000 / 1000;
+	Minutes = TimeInHundredthsOfSeconds % 360000 / 6000;
+	TensOfMinutes = TimeInHundredthsOfSeconds / 60000;
+	FString Time = FString::Printf(TEXT("%d%d:%d%d:%d%d"), TensOfMinutes, Minutes, TensOfSeconds, Seconds, TensOfHundredthsOfSeconds, HundredthsOfSeconds);
+	return FText::FromString(Time);
 }
 
-int32 AGMBase::GetSaveIndex() const
+FText AGMBase::GetCurrentTimeInText() const
 {
-	return SaveIndex;
+	return TimeToText(CurrentTime);
+}
+
+int32 AGMBase::GetCurrentFloorBeat() const
+{
+	return CurrentFloorBeat;
+}
+
+void AGMBase::SaveScore()
+{
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	if (SaveObject)
+	{
+		SaveObject->SaveTime(CurrentTime);
+		SaveObject->SaveFloorCount(CurrentFloorBeat);
+		UGameplayStatics::SaveGameToSlot(SaveObject, SaveSlotName, SaveIndex);
+	}
 }
 
 void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)

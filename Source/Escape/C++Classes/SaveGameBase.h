@@ -28,8 +28,10 @@ public:
 	int32 GetBestTime() const;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool bPlayedTutorial = false;
+	bool bPlayedTutorial;
 private:
+	UPROPERTY()
 	int32 BestFloorCount = 0;
-	int32 BestTime = 9999999;
+	UPROPERTY()
+	int32 BestTime = 99999;
 };

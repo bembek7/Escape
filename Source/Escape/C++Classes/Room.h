@@ -30,7 +30,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetRightTurns();
 
-	UFUNCTION()
 	FTransform GetExitTransform();
 
 protected:

@@ -232,58 +232,37 @@ private:
 
 	// Sliding off
 
-	UFUNCTION(Category = "SlidingOff")
 	void StopSlidingOff();
 
 	// Wall run
 
-	UFUNCTION(Category = "Wall Run")
 	bool CanWallBeRunOn(const FVector& WallNormal);
-
-	UFUNCTION(Category = "Wall Run")
-	void BeginWallRun();
-
-	UFUNCTION(Category = "Wall Run")
-	void EndWallRun();
-
-	UFUNCTION(Category = "Wall Run")
-	void UpdateWallRun();
-
-	UFUNCTION(Category = "Wall Run")
 	bool CanWallRun(const FVector& SurfaceNormal);
 
-	UFUNCTION(Category = "Wall Run")
+	void BeginWallRun();
+	void EndWallRun();
+	UFUNCTION()
+	void UpdateWallRun();
+	UFUNCTION()
 	void CameraTilt(float TimelineVal);
 
-	UFUNCTION(Category = "Wall Run")
 	WallRunSide FindRunSide(const FVector& WallNormal);
 
-	UFUNCTION(Category = "Wall Run")
 	FVector FindRunDirection(const FVector& WallNormal, WallRunSide Side);
-
-	UFUNCTION(Category = "Wall Run")
 	FVector FindLaunchFromWallVelocity() const;
 	
 	// Sliding
-
-	UFUNCTION(Category = "Slide")
+	UFUNCTION()
 	void Sliding(float Speed);
 
 	// Grapple
 
-	UFUNCTION(Category = "Grapple")
 	void UseGrapple();
-
-	UFUNCTION(Category = "Grapple")
 	void GrappleFirst();
-
-	UFUNCTION(Category = "Grapple")
 	void GrappleSecond();
-
-	UFUNCTION(Category = "Grapple")
+	UFUNCTION()
 	void GrappleDragUpdate(float TimelineVal);
 
-	UFUNCTION(Category = "Grapple")
 	bool FindGrappleTarget();
 
 	/////////////VARIABLES//////////////

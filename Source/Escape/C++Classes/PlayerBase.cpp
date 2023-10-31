@@ -9,7 +9,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-
 // Sets default values
 APlayerBase::APlayerBase()
 {
@@ -34,18 +33,11 @@ APlayerBase::APlayerBase()
 void APlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
-    PlayerController = Cast<APlayerControllerBase>(GetController());
-    // Adding Mapping Context
-    if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+    if (GetController())
     {
-        if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-        {
-            if (!InputMappingContext.IsNull())
-            {
-                InputSystem->AddMappingContext(InputMappingContext.LoadSynchronous(), 1);
-            }
-        }
+        BindController(GetController());
     }
+    
     MovementComponent = GetCharacterMovement();
     // setting the default movement variables
     DefaultCrouchSpeed = MovementComponent->MaxWalkSpeedCrouched;
@@ -163,6 +155,22 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
     }
 }
 
+void APlayerBase::BindController(AController* NewController)
+{
+    PlayerController = Cast<APlayerControllerBase>(NewController);
+    // Adding Mapping Context
+    if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+    {
+        if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+        {
+            if (!InputMappingContext.IsNull())
+            {
+                InputSystem->AddMappingContext(InputMappingContext.LoadSynchronous(), 1);
+            }
+        }
+    }
+}
+
 void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit)
 {
     if (OtherComp->ComponentHasTag(WallRunTag) && CanWallRun(Hit.ImpactNormal))
@@ -171,6 +179,10 @@ void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
         CurrentSide = FindRunSide(Hit.ImpactNormal);
         WallRunDirection = FindRunDirection(Hit.ImpactNormal, CurrentSide);
         BeginWallRun();
+    }
+    if (OtherComp->ComponentHasTag(KillBoxTag))
+    {
+        PlayerController->ShowDeathWidget();
     }
 }
 

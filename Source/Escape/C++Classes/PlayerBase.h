@@ -6,7 +6,6 @@
 #include "GameFramework/Character.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/TimelineComponent.h"
 #include "TimerManager.h"
@@ -42,6 +41,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
+	void BindController(AController* NewController);
 
 	// Ladder
 
@@ -200,6 +202,9 @@ protected:
 	float DefaultGravityScale;
 	UPROPERTY(BlueprintReadOnly, Category = "SavedDefaults")
 	float DefaultAcceleration;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kill Box")
+	FName KillBoxTag = FName("KillBox");
 
 private:
 	/////////////FUNCTIONS//////////////

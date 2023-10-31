@@ -27,16 +27,22 @@ public:
 	void PauseUnpause();
 
 	void UpdateDashIconScanHudWidget(float Percent);
-
+	
 	UFUNCTION(BlueprintCallable)
 	void TeleportToTutorial();
+	void TeleportToSpawn() const;
+
+	FVector GetPlayerSpawnLocation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
 	void HideMainMenu();
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
+	void HideDeathWidget();
 
 	void ShowTimeWidget();
 	void HideTimeWidget();
 	void ShowFloorCompletedWidget();
+	void ShowDeathWidget();
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
 	void HideFloorCompletedWidget();

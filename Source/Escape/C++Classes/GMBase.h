@@ -60,9 +60,13 @@ protected:
 	FString SaveSlotName = "DefaultSave";
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	TSubclassOf<ARoom>FinalRoomClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grapple")
+	FName GrappleTargetTag = FName("GrappleTarget");
 
 private:
 	void SaveScore();
+	void SpawnLevel();
+	void BindOnDestroyedToPlayer();
 
 	UFUNCTION()
 	void PlayerDestroyed(AActor* DestroyedPlayer);

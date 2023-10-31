@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SaveGameBase.h"
 #include "PlayerControllerBase.h"
+#include "PlayerBase.h"
 
 AGMBase::AGMBase()
 {
@@ -22,10 +23,8 @@ void AGMBase::BeginPlay()
 	RoomsChancesOfSpawning.Init(0, RoomsClasses.Num());
 	GenerateEqualChances();
 
-	LastRoomExitTransform = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()))->GetExitTransform();
-	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
-	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
+	SpawnLevel();
+	BindOnDestroyedToPlayer();
 }
 
 void AGMBase::FloorStarted()
@@ -116,14 +115,51 @@ void AGMBase::SaveScore()
 	}
 }
 
+void AGMBase::SpawnLevel()
+{
+	LastRoomExitTransform = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()))->GetExitTransform();
+	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
+}
+
+void AGMBase::BindOnDestroyedToPlayer()
+{
+	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
+}
+
 void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
 {
-	;
+	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	CurrentFloorBeat = 0;
+	APlayerBase* NewPlayer = GetWorld()->SpawnActor<APlayerBase>(DestroyedPlayer->GetClass(), PlayerController->GetPlayerSpawnLocation(), FRotator(0, 90, 0), FActorSpawnParameters());
+	PlayerController->Possess(NewPlayer);
+	NewPlayer->BindController(PlayerController);
+	if (!PlayerController->bInTutorial)
+	{
+		ClearRooms();
+		FloorStarted();
+	}
+	SpawnLevel();
+	BindOnDestroyedToPlayer();
 }
 
 void AGMBase::ClearRooms()
 {
-	;
+	for (auto& Room : SpawnedRooms)
+	{
+		GetWorld()->DestroyActor(Room);
+	}
+	SpawnedRooms.Empty();
+ 	TArray<AActor*>GrappleTargets;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), GrappleTargetTag, GrappleTargets);
+	for (auto& GrappleTarget : GrappleTargets)
+	{
+		GetWorld()->DestroyActor(GrappleTarget);
+	}
+	GrappleTargets.Empty();
+	SpawnedLeftTurns = 0;
+	SpawnedRightTurns = 0;
+	GenerateEqualChances();
 }
 
 TSubclassOf<ARoom> AGMBase::GetRandomRoomClass()

@@ -12,8 +12,9 @@ void APlayerControllerBase::BeginPlay()
 	Super::BeginPlay();
 	TutorialStartLocation = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass())->GetActorLocation();
 	RegularStartLocation = UGameplayStatics::GetActorOfClass(GetWorld(), ARegularStart::StaticClass())->GetActorLocation();
+    // Deciding Spawn Location and teleporting player there
 	DecideSpawnLocation();
-	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(PlayerSpawnLocation);
+    TeleportToSpawn();
     CreateWidgets();
     HudWidget->AddToPlayerScreen();
     ShowWidgetToFocus(MainMenu);
@@ -30,7 +31,6 @@ void APlayerControllerBase::DecideSpawnLocation()
 	if (bPlayedTutorial)
 	{
 		PlayerSpawnLocation = RegularStartLocation;
-		
 	}
 	else
 	{
@@ -125,9 +125,24 @@ void APlayerControllerBase::TeleportToTutorial()
     bInTutorial = true;
 }
 
+void APlayerControllerBase::TeleportToSpawn() const
+{
+    UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(PlayerSpawnLocation);
+}
+
+FVector APlayerControllerBase::GetPlayerSpawnLocation() const
+{
+    return PlayerSpawnLocation;
+}
+
 void APlayerControllerBase::HideMainMenu()
 {
     HideFocusedWidget(MainMenu);
+}
+
+void APlayerControllerBase::HideDeathWidget()
+{
+    HideWidgetAndUnpause(DeathWidget);
 }
 
 void APlayerControllerBase::ShowTimeWidget()
@@ -143,6 +158,11 @@ void APlayerControllerBase::HideTimeWidget()
 void APlayerControllerBase::ShowFloorCompletedWidget()
 {
     ShowWidgetAndPause(FloorCompletedWidget);
+}
+
+void APlayerControllerBase::ShowDeathWidget()
+{
+    ShowWidgetAndPause(DeathWidget);
 }
 
 void APlayerControllerBase::HideFloorCompletedWidget()

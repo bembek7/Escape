@@ -30,6 +30,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void TeleportToTutorial();
+	UFUNCTION(BlueprintCallable)
+	void SetSpawnLocationToRegular();
 	void TeleportToSpawn() const;
 
 	FVector GetPlayerSpawnLocation() const;

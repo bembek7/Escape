@@ -56,6 +56,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ladder")
 	void ExitLadderBoost();
 
+	void OnDestroyed();
+
 protected:
 	/////////////FUNCTIONS//////////////
 
@@ -103,9 +105,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	UCharacterMovementComponent* MovementComponent;
-
-	UPROPERTY(BlueprintReadOnly)
-	APlayerControllerBase* PlayerController;
 
 	// Sliding off
 

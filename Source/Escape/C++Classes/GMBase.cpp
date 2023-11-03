@@ -9,10 +9,10 @@
 
 AGMBase::AGMBase()
 {
-	if (!UGameplayStatics::DoesSaveGameExist(SaveSlotName, SaveIndex))
+	if (!UGameplayStatics::DoesSaveGameExist(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex))
 	{
 		USaveGame* SaveObject = UGameplayStatics::CreateSaveGameObject(USaveGameBase::StaticClass());
-		UGameplayStatics::SaveGameToSlot(SaveObject, SaveSlotName, SaveIndex);
+		UGameplayStatics::SaveGameToSlot(SaveObject, USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex);
 	}
 }
 
@@ -22,9 +22,6 @@ void AGMBase::BeginPlay()
 	
 	RoomsChancesOfSpawning.Init(0, RoomsClasses.Num());
 	GenerateEqualChances();
-
-	SpawnLevel();
-	BindOnDestroyedToPlayer();
 }
 
 void AGMBase::FloorStarted()
@@ -38,23 +35,23 @@ void AGMBase::FloorStarted()
 
 void AGMBase::SetSavePlayedTutorial(bool Played)
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		SaveObject->bPlayedTutorial = Played;
-		UGameplayStatics::SaveGameToSlot(SaveObject, SaveSlotName, SaveIndex);
+		UGameplayStatics::SaveGameToSlot(SaveObject, USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex);
 	}
 }
 
 int32 AGMBase::GetSavedTime() const
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	return SaveObject->GetBestTime();
 }
 
 int32 AGMBase::GetSavedFloorBeat() const
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	return SaveObject->GetBestFloorCount();
 }
 
@@ -68,12 +65,6 @@ void AGMBase::FloorCompleted()
 	PlayerController->ShowFloorCompletedWidget();
 	GetWorldTimerManager().ClearTimer(FloorTimer);
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
-}
-
-bool AGMBase::PlayedTutorial() const
-{
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
-	return SaveObject->bPlayedTutorial;
 }
 
 FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const
@@ -104,14 +95,20 @@ int32 AGMBase::GetCurrentFloorBeat() const
 	return CurrentFloorBeat;
 }
 
+void AGMBase::GameStarted()
+{
+	SpawnLevel();
+	BindOnDestroyedToPlayer();
+}
+
 void AGMBase::SaveScore()
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, SaveIndex));
+	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		SaveObject->SaveTime(CurrentTime);
 		SaveObject->SaveFloorCount(CurrentFloorBeat);
-		UGameplayStatics::SaveGameToSlot(SaveObject, SaveSlotName, SaveIndex);
+		UGameplayStatics::SaveGameToSlot(SaveObject, USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex);
 	}
 }
 
@@ -130,16 +127,19 @@ void AGMBase::BindOnDestroyedToPlayer()
 void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	Cast<APlayerBase>(DestroyedPlayer)->OnDestroyed();
+	PlayerController->UpdateDashIconScanHudWidget(0.f);
 	CurrentFloorBeat = 0;
 	APlayerBase* NewPlayer = GetWorld()->SpawnActor<APlayerBase>(DestroyedPlayer->GetClass(), PlayerController->GetPlayerSpawnLocation(), FRotator(0, 90, 0), FActorSpawnParameters());
 	PlayerController->Possess(NewPlayer);
 	NewPlayer->BindController(PlayerController);
 	if (!PlayerController->bInTutorial)
 	{
+		PlayerController->HideTimeWidget();
 		ClearRooms();
 		FloorStarted();
+		SpawnLevel();
 	}
-	SpawnLevel();
 	BindOnDestroyedToPlayer();
 }
 
@@ -201,11 +201,14 @@ void AGMBase::UpdateChances(uint32 ChosenIndex)
 	uint32 LoopIndex = 0;
 	for (auto& Chance : RoomsChancesOfSpawning)
 	{
-		if (Chance != ChancesOfChosenIndex)
+		if (LoopIndex != ChosenIndex)
 		{
 			Chance += DistributionOnOther;
 			Chance += DistributionRest;
-			DistributionRest = 0;
+			if (DistributionRest > 0)
+			{
+				DistributionRest--;
+			}
 		}
 		else
 		{

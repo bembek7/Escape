@@ -13,14 +13,13 @@ AGrappleLine::AGrappleLine()
 	PrimaryActorTick.bCanEverTick = true;
 	GrappleLine = CreateDefaultSubobject<UCableComponent>(TEXT("GrappleLine"));
 	GrappleLine->SetVisibility(false);
+	SetRootComponent(GrappleLine);
 }
 
 // Called when the game starts or when spawned
 void AGrappleLine::BeginPlay()
 {
 	Super::BeginPlay();
-	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	GrappleLine->SetAttachEndToComponent(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetMesh()); // we are attaching end of grapple line to player
 }
 
 // Called every frame
@@ -36,6 +35,8 @@ void AGrappleLine::Tick(float DeltaTime)
 
 void AGrappleLine::GrappleOn(const FVector& Target)
 {
+	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	GrappleLine->SetAttachEndToComponent(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetMesh()); // we are attaching end of grapple line to player
 	GrappleTarget = Target;
 	GrappleLine->SetVisibility(true);
 	bDeveloping = true;

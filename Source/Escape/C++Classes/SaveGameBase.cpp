@@ -3,6 +3,8 @@
 
 #include "SaveGameBase.h"
 
+const FString USaveGameBase::SaveSlotName = "DefaultSave";
+
 void USaveGameBase::SaveFloorCount(int32 NewFloorCount)
 {
 	BestFloorCount = FMath::Max(BestFloorCount, NewFloorCount);

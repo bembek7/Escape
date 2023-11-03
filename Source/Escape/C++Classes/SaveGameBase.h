@@ -29,6 +29,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bPlayedTutorial;
+
+	static const int32 SaveIndex = 0;
+	static const FString SaveSlotName;
 private:
 	UPROPERTY()
 	int32 BestFloorCount = 0;

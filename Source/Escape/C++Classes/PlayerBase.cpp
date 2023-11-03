@@ -33,10 +33,6 @@ APlayerBase::APlayerBase()
 void APlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
-    if (GetController())
-    {
-        BindController(GetController());
-    }
     
     MovementComponent = GetCharacterMovement();
     // setting the default movement variables
@@ -113,6 +109,10 @@ void APlayerBase::Tick(float DeltaTime)
 void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    if (GetController())
+    {
+        BindController(GetController());
+    }
     if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
         // Binding inputs
@@ -157,7 +157,7 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerBase::BindController(AController* NewController)
 {
-    PlayerController = Cast<APlayerControllerBase>(NewController);
+    APlayerController* PlayerController = Cast<APlayerControllerBase>(NewController);
     // Adding Mapping Context
     if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
     {
@@ -182,6 +182,7 @@ void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
     }
     if (OtherComp->ComponentHasTag(KillBoxTag))
     {
+        APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
         PlayerController->ShowDeathWidget();
     }
 }
@@ -232,6 +233,14 @@ void APlayerBase::ExitLadderBoost()
 {
     uint32 LaunchForce = 50;
     LaunchCharacter(GetActorUpVector() * LaunchForce, false, false);
+}
+
+void APlayerBase::OnDestroyed()
+{
+    if (ScanDashIcon.IsValid())
+    {
+        GetWorldTimerManager().ClearTimer(ScanDashIcon);
+    }
 }
 
 void APlayerBase::Walk(const FInputActionValue& IAValue)
@@ -322,10 +331,9 @@ void APlayerBase::Dash() // Dash ability
             DashForce = 2700;
         }
         LaunchCharacter(GetControlRotation().Vector() * DashForce, true, true);
-        
-        GetWorldTimerManager().SetTimer(ScanDashIcon, [this]() { PlayerController->UpdateDashIconScanHudWidget((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
-        GetWorldTimerManager().SetTimer(ResetDashIconScan, [this]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); PlayerController->UpdateDashIconScanHudWidget(0.f); }, DashCooldown, false);
-
+        APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
+        GetWorldTimerManager().SetTimer(ScanDashIcon, [this, PlayerController]() { PlayerController->UpdateDashIconScanHudWidget((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
+        GetWorldTimerManager().SetTimer(ResetDashIconScan, [this, PlayerController]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); PlayerController->UpdateDashIconScanHudWidget(0.f); }, DashCooldown, false);
         GetWorldTimerManager().SetTimer(DashTimerHandle, [this]() {bDashOnCooldown = false; }, DashCooldown, false);
     }
 }
@@ -365,6 +373,7 @@ void APlayerBase::CrouchSlideCompleted()
 
 void APlayerBase::PauseCalled()
 {
+    APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
     PlayerController->PauseUnpause();
 }
 
@@ -476,6 +485,7 @@ void APlayerBase::CameraTilt(float TimelineVal) // when wallrunning camera tilts
             CameraTiltSide = 1;
             break;
     }
+    APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
     FRotator CurrentRoation = PlayerController->GetControlRotation();
     PlayerController->SetControlRotation(FRotator(CurrentRoation.Pitch, CurrentRoation.Yaw, TimelineVal * CameraTiltSide));
 }
@@ -568,6 +578,7 @@ void APlayerBase::UseGrapple()
 
 void APlayerBase::GrappleFirst()
 {
+    APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
     GrappleLine = GetWorld()->SpawnActor<AGrappleLine>(GrappleLineClass, GetActorTransform(), FActorSpawnParameters());
     GrappleLine->GrappleOn(GrappleTarget->GetActorLocation());
     bGrappleCanSecondUse = true;
@@ -584,6 +595,7 @@ void APlayerBase::GrappleFirst()
 
 void APlayerBase::GrappleSecond()
 {
+    APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
     GrappleLine->GrappleOff();
     bIsGrappling = false;
     bGrappleCanSecondUse = false;

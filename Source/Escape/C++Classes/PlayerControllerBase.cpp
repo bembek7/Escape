@@ -6,6 +6,7 @@
 #include "RegularStart.h"
 #include "GMBase.h"
 #include "GameFramework/PlayerStart.h"
+#include "SaveGameBase.h"
 
 void APlayerControllerBase::BeginPlay()
 {
@@ -27,7 +28,17 @@ void APlayerControllerBase::Tick(float DeltaTime)
 
 void APlayerControllerBase::DecideSpawnLocation()
 {
-	bool bPlayedTutorial = Cast<AGMBase>(UGameplayStatics::GetGameMode(GetWorld()))->PlayedTutorial();
+    USaveGameBase* SaveObject;
+    if (!UGameplayStatics::DoesSaveGameExist(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex))
+    {
+        SaveObject = Cast<USaveGameBase>(UGameplayStatics::CreateSaveGameObject(USaveGameBase::StaticClass()));
+        UGameplayStatics::SaveGameToSlot(SaveObject, USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex);
+    }
+    else
+    {
+        SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+    }
+	bool bPlayedTutorial = SaveObject->bPlayedTutorial;
 	if (bPlayedTutorial)
 	{
 		PlayerSpawnLocation = RegularStartLocation;
@@ -123,6 +134,11 @@ void APlayerControllerBase::TeleportToTutorial()
     UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(TutorialStartLocation);
     PlayerSpawnLocation = TutorialStartLocation;
     bInTutorial = true;
+}
+
+void APlayerControllerBase::SetSpawnLocationToRegular()
+{
+    PlayerSpawnLocation = RegularStartLocation;
 }
 
 void APlayerControllerBase::TeleportToSpawn() const

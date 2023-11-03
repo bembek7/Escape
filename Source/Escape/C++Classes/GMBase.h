@@ -47,17 +47,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Rooms")
 	int32 GetCurrentFloorBeat() const;
 
-	bool PlayedTutorial() const;
+	UFUNCTION(BlueprintCallable)
+	void GameStarted();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	uint32 NumberOfRoomsToSpawn = 5;
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	TArray<TSubclassOf<ARoom>>RoomsClasses;
-	UPROPERTY(EditDefaultsOnly, Category = "Save");
-	uint32 SaveIndex = 0;
-	UPROPERTY(EditDefaultsOnly, Category = "Save");
-	FString SaveSlotName = "DefaultSave";
 	UPROPERTY(EditDefaultsOnly, Category = "Rooms");
 	TSubclassOf<ARoom>FinalRoomClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grapple")

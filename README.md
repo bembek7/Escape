@@ -3,6 +3,9 @@
 Developed with Unreal Engine 5
 
 
+There is a packed build for Windows in PackedBuild/Windows
+
+
 A small parkour game where using abilities like dash or grapple you have to get through as many floors as you can. The faster you are the better. Slide, jump, run on the walls to get as fast as you can to the end of the floor. Every floor is randomly generated from the array of possible rooms so you can play infinitely and every run will be different.
 
 Thera are 3 main classes:

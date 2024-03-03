@@ -4,7 +4,7 @@ Developed with Unreal Engine 5
 
 Short video showing how the gameplay looks like:
 
-[![Alt text](https://img.youtube.com/vi/v8iWWGkLW_0/0.jpg)](https://youtu.be/v8iWWGkLW_0)
+[![Alt text](https://img.youtube.com/vi/RDyMlgGKfT4/0.jpg)](https://youtu.be/RDyMlgGKfT4)
 
 
 There is a packaged build for Windows in PackedBuild/Windows

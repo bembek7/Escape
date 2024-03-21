@@ -30,4 +30,4 @@ Game Mode class responsible for spawning the level and counting the score.
 
 The project was firstly done in blueprints and then coverted to C++. I was doing it all alone so there is no sound or animation. Some of the abilities are used from my another project ASCEND, but they're also made by me.
 
-As I have reviewed the code later, I notice I ahve put way too much stuff in player class, and I don't like it.
+As I have reviewed the code later, I noticed I have put way too much stuff in player class, and I don't like it.

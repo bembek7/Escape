@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,89 +6,78 @@
 #include "PlayerControllerBase.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class ESCAPE_API APlayerControllerBase : public APlayerController
 {
 	GENERATED_BODY()
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void PauseUnpause();
+	void PauseUnpause() noexcept;
 
-	void UpdateDashIconScanHudWidget(float Percent);
-	
+	void UpdateDashIconScanHudWidget(const float Percent) noexcept;
+
 	UFUNCTION(BlueprintCallable)
-	void TeleportToTutorial();
+	void TeleportToTutorial() noexcept;
 	UFUNCTION(BlueprintCallable)
-	void SetSpawnLocationToRegular();
-	void TeleportToSpawn() const;
-
-	FVector GetPlayerSpawnLocation() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void HideMainMenu();
-	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void HideDeathWidget();
-
-	void ShowTimeWidget();
-	void HideTimeWidget();
-	void ShowFloorCompletedWidget();
-	void ShowDeathWidget();
+	void SetSpawnLocationToRegular() noexcept;
+	void TeleportToSpawn() const noexcept;
+	FVector GetPlayerSpawnLocation() const noexcept;
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void HideFloorCompletedWidget();
+	void HideMainMenu() noexcept;
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
+	void HideDeathWidget() noexcept;
+	void ShowTimeWidget() noexcept;
+	void HideTimeWidget() noexcept;
+	void ShowFloorCompletedWidget()  noexcept;
+	void ShowDeathWidget() noexcept;
+	UFUNCTION(BlueprintCallable, Category = "Widgets")
+	void HideFloorCompletedWidget() noexcept;
 
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	void CreateWidgets() noexcept;
+	void ShowWidgetToFocus(UUserWidget* WidgetToShow) noexcept;
+	void HideFocusedWidget(UUserWidget* WidgetToHide) noexcept;
+	void ShowWidgetAndPause(UUserWidget* WidgetToShow) noexcept;
+	void HideWidgetAndUnpause(UUserWidget* WidgetToHide) noexcept;
+	void DecideSpawnLocation() noexcept;
+
+public:
 	UPROPERTY(BLueprintReadWrite)
 	bool bInTutorial;
 
-protected: 
-
+protected:
 	// Widgets, blueprint children will set the widgets classes
-
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UW_HUD>HudWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>PauseWidgetClass; // blueprint child will set the widget class
+	TSubclassOf<UUserWidget>PauseWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>MainMenuClass; // blueprint child will set the widget class
+	TSubclassOf<UUserWidget>MainMenuClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>DeathWidgetClass; // blueprint child will set the widget class
+	TSubclassOf<UUserWidget>DeathWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>TimeWidgetClass; // blueprint child will set the widget class
+	TSubclassOf<UUserWidget>TimeWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UUserWidget>FloorCompletedWidgetClass; // blueprint child will set the widget class
+	TSubclassOf<UUserWidget>FloorCompletedWidgetClass;
 
 private:
-	void DecideSpawnLocation();
-
-	// Widgets
-
-	void CreateWidgets();
-	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
-	void HideFocusedWidget(UUserWidget* WidgetToHide);
-	void ShowWidgetAndPause(UUserWidget* WidgetToShow);
-	void HideWidgetAndUnpause(UUserWidget* WidgetToHide);
-
-
 	FVector PlayerSpawnLocation;
 	FVector TutorialStartLocation;
 	FVector RegularStartLocation;
-
-	// Widgets
 
 	UPROPERTY()
 	UW_HUD* HudWidget;

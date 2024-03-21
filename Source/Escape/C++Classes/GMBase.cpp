@@ -1,13 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "GMBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGameBase.h"
 #include "PlayerControllerBase.h"
 #include "PlayerBase.h"
 
-AGMBase::AGMBase()
+AGMBase::AGMBase() noexcept
 {
 	if (!UGameplayStatics::DoesSaveGameExist(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex))
 	{
@@ -19,21 +18,21 @@ AGMBase::AGMBase()
 void AGMBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	RoomsChancesOfSpawning.Init(0, RoomsClasses.Num());
 	GenerateEqualChances();
 }
 
-void AGMBase::FloorStarted()
+void AGMBase::FloorStarted() noexcept
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	CurrentFloorBeat++;
 	PlayerController->ShowTimeWidget();
 	CurrentTime = 0;
-	GetWorldTimerManager().SetTimer(FloorTimer, [this](){ CurrentTime++; }, 0.01f, true);
+	GetWorldTimerManager().SetTimer(FloorTimer, [this]() { CurrentTime++; }, 0.01f, true);
 }
 
-void AGMBase::SetSavePlayedTutorial(bool Played)
+void AGMBase::SetSavePlayedTutorial(bool Played) noexcept
 {
 	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
@@ -43,19 +42,19 @@ void AGMBase::SetSavePlayedTutorial(bool Played)
 	}
 }
 
-int32 AGMBase::GetSavedTime() const
+int32 AGMBase::GetSavedTime() const noexcept
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	return SaveObject->GetBestTime();
 }
 
-int32 AGMBase::GetSavedFloorBeat() const
+int32 AGMBase::GetSavedFloorBeat() const noexcept
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	return SaveObject->GetBestFloorCount();
 }
 
-void AGMBase::FloorCompleted()
+void AGMBase::FloorCompleted() noexcept
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	SpawnedLeftTurns = 0;
@@ -67,7 +66,7 @@ void AGMBase::FloorCompleted()
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 }
 
-FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const
+FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const noexcept
 {
 	uint32 HundredthsOfSeconds;
 	uint32 TensOfHundredthsOfSeconds;
@@ -81,27 +80,27 @@ FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const
 	TensOfSeconds = TimeInHundredthsOfSeconds % 6000 / 1000;
 	Minutes = TimeInHundredthsOfSeconds % 360000 / 6000;
 	TensOfMinutes = TimeInHundredthsOfSeconds / 60000;
-	FString Time = FString::Printf(TEXT("%d%d:%d%d:%d%d"), TensOfMinutes, Minutes, TensOfSeconds, Seconds, TensOfHundredthsOfSeconds, HundredthsOfSeconds);
+	const FString Time = FString::Printf(TEXT("%d%d:%d%d:%d%d"), TensOfMinutes, Minutes, TensOfSeconds, Seconds, TensOfHundredthsOfSeconds, HundredthsOfSeconds);
 	return FText::FromString(Time);
 }
 
-FText AGMBase::GetCurrentTimeInText() const
+FText AGMBase::GetCurrentTimeInText() const noexcept
 {
 	return TimeToText(CurrentTime);
 }
 
-int32 AGMBase::GetCurrentFloorBeat() const
+int32 AGMBase::GetCurrentFloorBeat() const noexcept
 {
 	return CurrentFloorBeat;
 }
 
-void AGMBase::GameStarted()
+void AGMBase::GameStarted() noexcept
 {
 	SpawnLevel();
 	BindOnDestroyedToPlayer();
 }
 
-void AGMBase::SaveScore()
+void AGMBase::SaveScore() const noexcept
 {
 	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
@@ -112,19 +111,19 @@ void AGMBase::SaveScore()
 	}
 }
 
-void AGMBase::SpawnLevel()
+void AGMBase::SpawnLevel() noexcept
 {
 	LastRoomExitTransform = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()))->GetExitTransform();
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 }
 
-void AGMBase::BindOnDestroyedToPlayer()
+void AGMBase::BindOnDestroyedToPlayer() const noexcept
 {
 	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
 }
 
-void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
+void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer) noexcept
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	Cast<APlayerBase>(DestroyedPlayer)->OnDestroyed();
@@ -143,14 +142,14 @@ void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
 	BindOnDestroyedToPlayer();
 }
 
-void AGMBase::ClearRooms()
+void AGMBase::ClearRooms() noexcept
 {
 	for (auto& Room : SpawnedRooms)
 	{
 		GetWorld()->DestroyActor(Room);
 	}
 	SpawnedRooms.Empty();
- 	TArray<AActor*>GrappleTargets;
+	TArray<AActor*>GrappleTargets;
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), GrappleTargetTag, GrappleTargets);
 	for (auto& GrappleTarget : GrappleTargets)
 	{
@@ -162,10 +161,10 @@ void AGMBase::ClearRooms()
 	GenerateEqualChances();
 }
 
-TSubclassOf<ARoom> AGMBase::GetRandomRoomClass()
+TSubclassOf<ARoom> AGMBase::GetRandomRoomClass() noexcept
 {
-	uint32 RandomIndex = GetRandomRoomIndex();
-	TSubclassOf<ARoom> RandomClass = RoomsClasses[RandomIndex];
+	const uint32 RandomIndex = GetRandomRoomIndex();
+	const TSubclassOf<ARoom> RandomClass = RoomsClasses[RandomIndex];
 	if (RandomClass.GetDefaultObject()->GetLeftTurns() + SpawnedLeftTurns >= 4 || RandomClass.GetDefaultObject()->GetRightTurns() + SpawnedRightTurns >= 4)
 	{
 		GetRandomRoomClass();
@@ -173,7 +172,7 @@ TSubclassOf<ARoom> AGMBase::GetRandomRoomClass()
 	return RandomClass;
 }
 
-uint32 AGMBase::GetRandomRoomIndex()
+uint32 AGMBase::GetRandomRoomIndex() noexcept
 {
 	TArray<int32>AllRoomsIndexesByChances;
 	AllRoomsIndexesByChances.Reserve(100);
@@ -187,16 +186,16 @@ uint32 AGMBase::GetRandomRoomIndex()
 		ChanceIndex++;
 	}
 	int32 RandomizedClassIndex; // the index of room in RoomsClasses Array and Chances Array
-	RandomizedClassIndex = AllRoomsIndexesByChances[FMath::RandRange(0, AllRoomsIndexesByChances.Num()-1)];
+	RandomizedClassIndex = AllRoomsIndexesByChances[FMath::RandRange(0, AllRoomsIndexesByChances.Num() - 1)];
 	UpdateChances(RandomizedClassIndex);
 	return RandomizedClassIndex;
 }
 
-void AGMBase::UpdateChances(uint32 ChosenIndex)
+void AGMBase::UpdateChances(const uint32 ChosenIndex) noexcept
 {
-	uint32 ChancesOfChosenIndex = RoomsChancesOfSpawning[ChosenIndex];
+	const uint32 ChancesOfChosenIndex = RoomsChancesOfSpawning[ChosenIndex];
 	// we will set chances of index we got to 0 so we are distributing the chances of it to other classes chances
-	uint32 DistributionOnOther = ChancesOfChosenIndex / (RoomsChancesOfSpawning.Num() - 1);
+	const uint32 DistributionOnOther = ChancesOfChosenIndex / (RoomsChancesOfSpawning.Num() - 1);
 	uint32 DistributionRest = ChancesOfChosenIndex % (RoomsChancesOfSpawning.Num() - 1);
 	uint32 LoopIndex = 0;
 	for (auto& Chance : RoomsChancesOfSpawning)
@@ -218,7 +217,7 @@ void AGMBase::UpdateChances(uint32 ChosenIndex)
 	}
 }
 
-void AGMBase::GenerateEqualChances()
+void AGMBase::GenerateEqualChances() noexcept
 {
 	for (auto& chance : RoomsChancesOfSpawning)
 	{
@@ -227,12 +226,12 @@ void AGMBase::GenerateEqualChances()
 	RoomsChancesOfSpawning.Last() += 100 % RoomsChancesOfSpawning.Num();
 }
 
-void AGMBase::SpawnRooms(uint32 RoomsToSpawn, const FTransform& LastExitTransform)
+void AGMBase::SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTransform) noexcept
 {
 	if (RoomsToSpawn > 0)
 	{
 		SpawnRoom(GetRandomRoomClass(), LastExitTransform);
-		SpawnRooms(RoomsToSpawn-1, LastRoomExitTransform);
+		SpawnRooms(RoomsToSpawn - 1, LastRoomExitTransform);
 	}
 	else
 	{
@@ -240,7 +239,7 @@ void AGMBase::SpawnRooms(uint32 RoomsToSpawn, const FTransform& LastExitTransfor
 	}
 }
 
-void AGMBase::SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform)
+void AGMBase::SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform) noexcept
 {
 	ARoom* SpawnedRoom = GetWorld()->SpawnActor<ARoom>(RoomClass.Get(), SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), FActorSpawnParameters());
 	SpawnedRooms.Add(SpawnedRoom);

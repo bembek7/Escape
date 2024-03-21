@@ -7,31 +7,39 @@
 #include "SaveGameBase.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class ESCAPE_API USaveGameBase : public USaveGame
 {
 	GENERATED_BODY()
-	
+
 public:
 	UFUNCTION(BlueprintCallable)
-	void SaveFloorCount(int32 NewFloorCount);
+	void SaveFloorCount(const int32 NewFloorCount) noexcept;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetBestFloorCount() const;
+	int32 GetBestFloorCount() const noexcept;
 
 	UFUNCTION(BlueprintCallable)
-	void SaveTime(int32 NewTime);
+	void SaveTime(const int32 NewTime) noexcept;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetBestTime() const;
+	int32 GetBestTime() const noexcept;
 
+protected:
+
+private:
+
+public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bPlayedTutorial;
 
 	static const int32 SaveIndex = 0;
 	static const FString SaveSlotName;
+
+protected:
+
 private:
 	UPROPERTY()
 	int32 BestFloorCount = 0;

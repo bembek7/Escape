@@ -6,23 +6,8 @@
 #include "Components/SceneComponent.h"
 #include "LevelExit.generated.h"
 
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ESCAPE_API ULevelExit : public USceneComponent
 {
 	GENERATED_BODY()
-
-public:	
-	// Sets default values for this component's properties
-	ULevelExit();
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
 };

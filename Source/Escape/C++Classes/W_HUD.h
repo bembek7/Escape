@@ -9,7 +9,7 @@
 #include "W_HUD.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class ESCAPE_API UW_HUD : public UUserWidget
@@ -18,10 +18,15 @@ class ESCAPE_API UW_HUD : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	
-	UFUNCTION(BlueprintCallable)
-	void UpdateDashIconScan(float Percent);
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateDashIconScan(const float Percent) noexcept;
+
+protected:
+
+private:
+
+public:
 
 protected:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -35,4 +40,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ScalarParameterName = FName("Percent");
+
+private:
 };

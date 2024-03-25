@@ -31,12 +31,15 @@ void AGrappleLine::Tick(float DeltaTime)
 void AGrappleLine::GrappleOn(const FVector& Target) noexcept
 {
 	const ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	GrappleLine->SetAttachEndToComponent(PlayerChar->GetMesh()); // We are attaching end of grapple line to player
-	GrappleTarget = Target;
-	GrappleLine->SetVisibility(true);
-	bDeveloping = true;
-	const float LineDevelopingInRate = 0.5f;
-	GetWorldTimerManager().SetTimer(LineDevelopingTimer, [this]() {bDeveloping = false; }, LineDevelopingInRate, false);
+	if (PlayerChar)
+	{
+		GrappleLine->SetAttachEndToComponent(PlayerChar->GetMesh()); // We are attaching end of grapple line to player
+		GrappleTarget = Target;
+		GrappleLine->SetVisibility(true);
+		bDeveloping = true;
+		const float LineDevelopingInRate = 0.5f;
+		GetWorldTimerManager().SetTimer(LineDevelopingTimer, [this]() {bDeveloping = false; }, LineDevelopingInRate, false);
+	}
 }
 
 void AGrappleLine::GrappleOff() noexcept

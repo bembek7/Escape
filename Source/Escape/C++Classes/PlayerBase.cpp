@@ -151,15 +151,17 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerBase::BindController(AController* NewController) noexcept
 {
-	const APlayerController* PlayerController = Cast<APlayerControllerBase>(NewController);
-	// Adding Mapping Context
-	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+	if (const APlayerController* PlayerController = Cast<APlayerControllerBase>(NewController))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		// Adding Mapping Context
+		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
 		{
-			if (!InputMappingContext.IsNull())
+			if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 			{
-				InputSystem->AddMappingContext(InputMappingContext.LoadSynchronous(), 1);
+				if (!InputMappingContext.IsNull())
+				{
+					InputSystem->AddMappingContext(InputMappingContext.LoadSynchronous(), 1);
+				}
 			}
 		}
 	}
@@ -176,8 +178,10 @@ void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	}
 	if (OtherComp->ComponentHasTag(KillBoxTag))
 	{
-		APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
-		PlayerController->ShowDeathWidget();
+		if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+		{
+			PlayerController->ShowDeathWidget();
+		}
 	}
 }
 
@@ -366,8 +370,10 @@ void APlayerBase::CrouchSlideCompleted() noexcept
 
 void APlayerBase::PauseCalled() noexcept
 {
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
-	PlayerController->PauseUnpause();
+	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	{
+		PlayerController->PauseUnpause();
+	}
 }
 
 void APlayerBase::CrouchSlide() noexcept // If player is fast enough we initiate slide if not we initiate normal crouch
@@ -477,9 +483,11 @@ void APlayerBase::CameraTilt(float TimelineVal) const noexcept // When wallrunni
 		CameraTiltSide = 1;
 		break;
 	}
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
-	const FRotator CurrentRoation = PlayerController->GetControlRotation();
-	PlayerController->SetControlRotation(FRotator(CurrentRoation.Pitch, CurrentRoation.Yaw, TimelineVal * CameraTiltSide));
+	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	{
+		const FRotator CurrentRoation = PlayerController->GetControlRotation();
+		PlayerController->SetControlRotation(FRotator(CurrentRoation.Pitch, CurrentRoation.Yaw, TimelineVal * CameraTiltSide));
+	}
 }
 
 WallRunSide APlayerBase::FindRunSide(const FVector& WallNormal) const noexcept
@@ -570,7 +578,6 @@ void APlayerBase::UseGrapple() noexcept
 
 void APlayerBase::GrappleFirst() noexcept
 {
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
 	GrappleLine = GetWorld()->SpawnActor<AGrappleLine>(GrappleLineClass, GetActorTransform(), FActorSpawnParameters());
 	GrappleLine->GrappleOn(GrappleTarget->GetActorLocation());
 	bGrappleCanSecondUse = true;
@@ -580,18 +587,23 @@ void APlayerBase::GrappleFirst() noexcept
 	bCanUseGrapple = true;
 	MovementComponent->SetMovementMode(EMovementMode::MOVE_Flying);
 	MovementComponent->StopMovementImmediately();
-	PlayerController->SetIgnoreMoveInput(true);
+	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	{
+		PlayerController->SetIgnoreMoveInput(true);
+	}
 	GrappleBeginningDistance = UKismetMathLibrary::Vector_Distance(GetActorLocation(), GrappleTarget->GetActorLocation());
 	GrappleDragTimeline->PlayFromStart();
 }
 
 void APlayerBase::GrappleSecond() noexcept
 {
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
+	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	{
+		PlayerController->SetIgnoreMoveInput(false);
+	}
 	GrappleLine->GrappleOff();
 	bIsGrappling = false;
 	bGrappleCanSecondUse = false;
-	PlayerController->SetIgnoreMoveInput(false);
 	GrappleDragTimeline->Stop();
 	MovementComponent->SetMovementMode(MOVE_Walking);
 	FVector ZImpulseToAddOnEnd;
@@ -632,15 +644,17 @@ bool APlayerBase::FindGrappleTarget() noexcept
 	const FVector PlayerLooks = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetActorForwardVector();
 	for (const auto& Hit : TraceResults)
 	{
-		AActor* TargetFound = Hit.GetActor();
-		const bool bTargetOnScreen = TargetFound->WasRecentlyRendered();
-		const FVector TargetDirection = FVector(TargetFound->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		const float DistanceTargetToCursor = UKismetMathLibrary::Vector_Distance(TargetDirection, PlayerLooks);
-		const bool bTargetCloserToCursor = DistanceTargetToCursor < Difference;
-		if (bTargetOnScreen && bTargetCloserToCursor)
+		if (AActor* TargetFound = Hit.GetActor())
 		{
-			Difference = DistanceTargetToCursor;
-			GrappleTarget = TargetFound;
+			const bool bTargetOnScreen = TargetFound->WasRecentlyRendered();
+			const FVector TargetDirection = FVector(TargetFound->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			const float DistanceTargetToCursor = UKismetMathLibrary::Vector_Distance(TargetDirection, PlayerLooks);
+			const bool bTargetCloserToCursor = DistanceTargetToCursor < Difference;
+			if (bTargetOnScreen && bTargetCloserToCursor)
+			{
+				Difference = DistanceTargetToCursor;
+				GrappleTarget = TargetFound;
+			}
 		}
 	}
 	return UKismetSystemLibrary::IsValid(GrappleTarget);

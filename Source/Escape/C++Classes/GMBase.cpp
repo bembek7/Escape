@@ -26,8 +26,11 @@ void AGMBase::BeginPlay()
 void AGMBase::FloorStarted() noexcept
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PlayerController)
+	{
+		PlayerController->ShowTimeWidget();
+	}
 	CurrentFloorBeat++;
-	PlayerController->ShowTimeWidget();
 	CurrentTime = 0;
 	GetWorldTimerManager().SetTimer(FloorTimer, [this]() { CurrentTime++; }, 0.01f, true);
 }
@@ -45,23 +48,34 @@ void AGMBase::SetSavePlayedTutorial(bool Played) noexcept
 int32 AGMBase::GetSavedTime() const noexcept
 {
 	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
-	return SaveObject->GetBestTime();
+	if (SaveObject)
+	{
+		return SaveObject->GetBestTime();
+	}
+	return 0;
 }
 
 int32 AGMBase::GetSavedFloorBeat() const noexcept
 {
-	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
-	return SaveObject->GetBestFloorCount();
+	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex)); 
+	if (SaveObject)
+	{
+		return SaveObject->GetBestFloorCount();
+	}
+	return 0;
 }
 
 void AGMBase::FloorCompleted() noexcept
 {
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	SpawnedLeftTurns = 0;
 	SpawnedRightTurns = 0;
-	PlayerController->HideTimeWidget();
 	SaveScore();
-	PlayerController->ShowFloorCompletedWidget();
+	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PlayerController)
+	{
+		PlayerController->HideTimeWidget();
+		PlayerController->ShowFloorCompletedWidget();
+	}
 	GetWorldTimerManager().ClearTimer(FloorTimer);
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 }
@@ -113,33 +127,47 @@ void AGMBase::SaveScore() const noexcept
 
 void AGMBase::SpawnLevel() noexcept
 {
-	LastRoomExitTransform = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()))->GetExitTransform();
-	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
+	ARoom* LastRoom = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()));
+	if(LastRoom)
+	{
+		LastRoomExitTransform = LastRoom->GetExitTransform();
+		SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
+	}
 }
 
 void AGMBase::BindOnDestroyedToPlayer() const noexcept
 {
 	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
+	if (PlayerChar)
+	{
+		PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
+	}
 }
 
 void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer) noexcept
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	Cast<APlayerBase>(DestroyedPlayer)->OnDestroyed();
-	PlayerController->UpdateDashIconScanHudWidget(0.f);
-	CurrentFloorBeat = 0;
-	APlayerBase* NewPlayer = GetWorld()->SpawnActor<APlayerBase>(DestroyedPlayer->GetClass(), PlayerController->GetPlayerSpawnLocation(), FRotator(0, 90, 0), FActorSpawnParameters());
-	PlayerController->Possess(NewPlayer);
-	NewPlayer->BindController(PlayerController);
-	if (!PlayerController->bInTutorial)
+	if (PlayerController)
 	{
-		PlayerController->HideTimeWidget();
-		ClearRooms();
-		FloorStarted();
-		SpawnLevel();
+		PlayerController->UpdateDashIconScanHudWidget(0.f);
+		APlayerBase* DestroyedPlayerCasted = Cast<APlayerBase>(DestroyedPlayer);
+		if (DestroyedPlayerCasted)
+		{
+			DestroyedPlayerCasted->OnDestroyed();
+		}
+		CurrentFloorBeat = 0;
+		APlayerBase* NewPlayer = GetWorld()->SpawnActor<APlayerBase>(DestroyedPlayer->GetClass(), PlayerController->GetPlayerSpawnLocation(), FRotator(0, 90, 0), FActorSpawnParameters());
+		PlayerController->Possess(NewPlayer);
+		NewPlayer->BindController(PlayerController);
+		if (!PlayerController->bInTutorial)
+		{
+			PlayerController->HideTimeWidget();
+			ClearRooms();
+			FloorStarted();
+			SpawnLevel();
+		}
+		BindOnDestroyedToPlayer();
 	}
-	BindOnDestroyedToPlayer();
 }
 
 void AGMBase::ClearRooms() noexcept
@@ -243,7 +271,7 @@ void AGMBase::SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& S
 {
 	ARoom* SpawnedRoom = GetWorld()->SpawnActor<ARoom>(RoomClass.Get(), SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), FActorSpawnParameters());
 	SpawnedRooms.Add(SpawnedRoom);
-	LastRoomExitTransform = Cast<USceneComponent>(SpawnedRoom->GetComponentByClass(ULevelExit::StaticClass()))->GetComponentTransform();
+	LastRoomExitTransform = SpawnedRoom->GetExitTransform();
 	SpawnedLeftTurns += SpawnedRoom->GetLeftTurns();
 	SpawnedRightTurns += SpawnedRoom->GetRightTurns();
 }

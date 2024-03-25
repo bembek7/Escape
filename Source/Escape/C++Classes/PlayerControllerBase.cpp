@@ -8,8 +8,14 @@
 void APlayerControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
-	TutorialStartLocation = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass())->GetActorLocation();
-	RegularStartLocation = UGameplayStatics::GetActorOfClass(GetWorld(), ARegularStart::StaticClass())->GetActorLocation();
+	if (AActor* TutorialStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	{
+		TutorialStartLocation = TutorialStart->GetActorLocation();
+	}
+	if (AActor* RegularStart = UGameplayStatics::GetActorOfClass(GetWorld(), ARegularStart::StaticClass()))
+	{
+		RegularStartLocation = RegularStart->GetActorLocation();
+	}
 	// Deciding Spawn Location and teleporting player there
 	DecideSpawnLocation();
 	TeleportToSpawn();
@@ -49,6 +55,7 @@ void APlayerControllerBase::DecideSpawnLocation() noexcept
 
 void APlayerControllerBase::CreateWidgets() noexcept
 {
+	if (HudWidgetClass)
 	{
 		HudWidget = CreateWidget<UW_HUD>(this, HudWidgetClass);
 	}

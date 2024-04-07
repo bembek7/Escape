@@ -42,10 +42,10 @@ void AGrappleLine::GrappleOn(const FVector& Target)
 	}
 }
 
-void AGrappleLine::GrappleOff() noexcept
+void AGrappleLine::GrappleOff()
 {
 	bDeveloping = false;
-	if(GrappleLine)
+	if (GrappleLine)
 	{
 		GrappleLine->SetVisibility(false);
 	}

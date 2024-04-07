@@ -59,7 +59,7 @@ void APlayerBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Slide off check
-	const AActor* Floor = MovementComponent->CurrentFloor.HitResult.GetActor();
+	AActor* const Floor = MovementComponent->CurrentFloor.HitResult.GetActor();
 	const FVector ImpactNormal = MovementComponent->CurrentFloor.HitResult.ImpactNormal;
 	if (Floor) // Checking if player should slide off the floor he is standing on or if he should stop sliding
 	{
@@ -151,10 +151,10 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerBase::BindController(AController* NewController)
 {
-	if (const APlayerController* PlayerController = Cast<APlayerControllerBase>(NewController))
+	if (APlayerController* const PlayerController = Cast<APlayerControllerBase>(NewController))
 	{
 		// Adding Mapping Context
-		if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
+		if (ULocalPlayer* const LocalPlayer = Cast<ULocalPlayer>(PlayerController->GetLocalPlayer()))
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 			{
@@ -178,7 +178,7 @@ void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	}
 	if (OtherComp->ComponentHasTag(KillBoxTag))
 	{
-		if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+		if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(GetController()))
 		{
 			PlayerController->ShowDeathWidget();
 		}
@@ -328,10 +328,13 @@ void APlayerBase::Dash()// Dash ability
 			DashForce = 2700;
 		}
 		LaunchCharacter(GetControlRotation().Vector() * DashForce, true, true);
-		APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
-		GetWorldTimerManager().SetTimer(ScanDashIcon, [this, PlayerController]() { PlayerController->UpdateDashIconScanHudWidget((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
-		GetWorldTimerManager().SetTimer(ResetDashIconScan, [this, PlayerController]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); PlayerController->UpdateDashIconScanHudWidget(0.f); }, DashCooldown, false);
-		GetWorldTimerManager().SetTimer(DashTimerHandle, [this]() {bDashOnCooldown = false; }, DashCooldown, false);
+		APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(GetController());
+		if (PlayerController)
+		{
+			GetWorldTimerManager().SetTimer(ScanDashIcon, [this, PlayerController]() { PlayerController->UpdateDashIconScanHudWidget((DashCooldown - GetWorldTimerManager().GetTimerRemaining(ResetDashIconScan)) / DashCooldown); }, 0.01f, true);
+			GetWorldTimerManager().SetTimer(ResetDashIconScan, [this, PlayerController]() { GetWorldTimerManager().ClearTimer(ScanDashIcon); PlayerController->UpdateDashIconScanHudWidget(0.f); }, DashCooldown, false);
+			GetWorldTimerManager().SetTimer(DashTimerHandle, [this]() {bDashOnCooldown = false; }, DashCooldown, false);
+		}
 	}
 }
 
@@ -370,7 +373,7 @@ void APlayerBase::CrouchSlideCompleted()
 
 void APlayerBase::PauseCalled()
 {
-	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(GetController()))
 	{
 		PlayerController->PauseUnpause();
 	}
@@ -483,7 +486,7 @@ void APlayerBase::CameraTilt(float TimelineVal) const // When wallrunning camera
 		CameraTiltSide = 1;
 		break;
 	}
-	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(GetController()))
 	{
 		const FRotator CurrentRoation = PlayerController->GetControlRotation();
 		PlayerController->SetControlRotation(FRotator(CurrentRoation.Pitch, CurrentRoation.Yaw, TimelineVal * CameraTiltSide));
@@ -587,7 +590,7 @@ void APlayerBase::GrappleFirst()
 	bCanUseGrapple = true;
 	MovementComponent->SetMovementMode(EMovementMode::MOVE_Flying);
 	MovementComponent->StopMovementImmediately();
-	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(GetController()))
 	{
 		PlayerController->SetIgnoreMoveInput(true);
 	}
@@ -597,7 +600,7 @@ void APlayerBase::GrappleFirst()
 
 void APlayerBase::GrappleSecond()
 {
-	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(GetController()))
 	{
 		PlayerController->SetIgnoreMoveInput(false);
 	}
@@ -638,13 +641,16 @@ bool APlayerBase::FindGrappleTarget()
 	TArray<FHitResult> TraceResults;
 	TArray<TEnumAsByte<EObjectTypeQuery>>GrappleTargetType;
 	const EObjectTypeQuery GrappleType = UCollisionProfile::Get()->ConvertToObjectType(ECC_GameTraceChannel1);  // grapple object type
-	if (GrappleType)GrappleTargetType.Add(GrappleType);
+	if (GrappleType)
+	{
+		GrappleTargetType.Add(GrappleType);
+	}
 	UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), GetActorLocation(), GetActorLocation(), TraceRadius, GrappleTargetType, false, TArray<AActor*>(), EDrawDebugTrace::None, TraceResults, false);
 	float Difference = 999999; // Difference in distance between grapple target and player's cursor
 	const FVector PlayerLooks = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetActorForwardVector();
 	for (const auto& Hit : TraceResults)
 	{
-		if (AActor* TargetFound = Hit.GetActor())
+		if (AActor* const TargetFound = Hit.GetActor())
 		{
 			const bool bTargetOnScreen = TargetFound->WasRecentlyRendered();
 			const FVector TargetDirection = FVector(TargetFound->GetActorLocation() - GetActorLocation()).GetSafeNormal();

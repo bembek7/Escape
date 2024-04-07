@@ -10,7 +10,7 @@ AGMBase::AGMBase()
 {
 	if (!UGameplayStatics::DoesSaveGameExist(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex))
 	{
-		USaveGame* SaveObject = UGameplayStatics::CreateSaveGameObject(USaveGameBase::StaticClass());
+		USaveGame* const SaveObject = UGameplayStatics::CreateSaveGameObject(USaveGameBase::StaticClass());
 		UGameplayStatics::SaveGameToSlot(SaveObject, USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex);
 	}
 }
@@ -25,8 +25,7 @@ void AGMBase::BeginPlay()
 
 void AGMBase::FloorStarted()
 {
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PlayerController)
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
 		PlayerController->ShowTimeWidget();
 	}
@@ -37,7 +36,7 @@ void AGMBase::FloorStarted()
 
 void AGMBase::SetSavePlayedTutorial(bool Played)
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+	USaveGameBase* const SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		SaveObject->bPlayedTutorial = Played;
@@ -47,7 +46,7 @@ void AGMBase::SetSavePlayedTutorial(bool Played)
 
 int32 AGMBase::GetSavedTime() const
 {
-	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+	USaveGameBase* const SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		return SaveObject->GetBestTime();
@@ -57,7 +56,7 @@ int32 AGMBase::GetSavedTime() const
 
 int32 AGMBase::GetSavedFloorBeat() const
 {
-	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+	USaveGameBase* const SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		return SaveObject->GetBestFloorCount();
@@ -70,8 +69,7 @@ void AGMBase::FloorCompleted()
 	SpawnedLeftTurns = 0;
 	SpawnedRightTurns = 0;
 	SaveScore();
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PlayerController)
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
 		PlayerController->HideTimeWidget();
 		PlayerController->ShowFloorCompletedWidget();
@@ -80,20 +78,14 @@ void AGMBase::FloorCompleted()
 	SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 }
 
-FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const noexcept
+FText AGMBase::TimeToText(const int32 TimeInHundredthsOfSeconds) const
 {
-	uint32 HundredthsOfSeconds;
-	uint32 TensOfHundredthsOfSeconds;
-	uint32 Seconds;
-	uint32 TensOfSeconds;
-	uint32 Minutes;
-	uint32 TensOfMinutes;
-	HundredthsOfSeconds = TimeInHundredthsOfSeconds % 10;
-	TensOfHundredthsOfSeconds = TimeInHundredthsOfSeconds % 100 / 10;
-	Seconds = TimeInHundredthsOfSeconds % 1000 / 100;
-	TensOfSeconds = TimeInHundredthsOfSeconds % 6000 / 1000;
-	Minutes = TimeInHundredthsOfSeconds % 360000 / 6000;
-	TensOfMinutes = TimeInHundredthsOfSeconds / 60000;
+	const uint32 HundredthsOfSeconds = TimeInHundredthsOfSeconds % 10;
+	const uint32 TensOfHundredthsOfSeconds = TimeInHundredthsOfSeconds % 100 / 10;
+	const uint32 Seconds = TimeInHundredthsOfSeconds % 1000 / 100;
+	const uint32 TensOfSeconds = TimeInHundredthsOfSeconds % 6000 / 1000;
+	const uint32 Minutes = TimeInHundredthsOfSeconds % 360000 / 6000;
+	const uint32 TensOfMinutes = TimeInHundredthsOfSeconds / 60000;
 	const FString Time = FString::Printf(TEXT("%d%d:%d%d:%d%d"), TensOfMinutes, Minutes, TensOfSeconds, Seconds, TensOfHundredthsOfSeconds, HundredthsOfSeconds);
 	return FText::FromString(Time);
 }
@@ -116,7 +108,7 @@ void AGMBase::GameStarted()
 
 void AGMBase::SaveScore() const
 {
-	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
+	USaveGameBase* const SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		SaveObject->SaveTime(CurrentTime);
@@ -127,7 +119,7 @@ void AGMBase::SaveScore() const
 
 void AGMBase::SpawnLevel()
 {
-	ARoom* LastRoom = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()));
+	ARoom* const LastRoom = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()));
 	if (LastRoom)
 	{
 		LastRoomExitTransform = LastRoom->GetExitTransform();
@@ -137,26 +129,23 @@ void AGMBase::SpawnLevel()
 
 void AGMBase::BindOnDestroyedToPlayer() const
 {
-	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (PlayerChar)
+	if (ACharacter* const PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 	{
 		PlayerChar->OnDestroyed.AddDynamic(this, &AGMBase::PlayerDestroyed);
 	}
 }
 
-void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
+void AGMBase::PlayerDestroyed(AActor* const DestroyedPlayer)
 {
-	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PlayerController)
+	if (APlayerControllerBase* const PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
 		PlayerController->UpdateDashIconScanHudWidget(0.f);
-		APlayerBase* DestroyedPlayerCasted = Cast<APlayerBase>(DestroyedPlayer);
-		if (DestroyedPlayerCasted)
+		if (APlayerBase* const DestroyedPlayerCasted = Cast<APlayerBase>(DestroyedPlayer))
 		{
 			DestroyedPlayerCasted->OnDestroyed();
 		}
 		CurrentFloorBeat = 0;
-		APlayerBase* NewPlayer = GetWorld()->SpawnActor<APlayerBase>(DestroyedPlayer->GetClass(), PlayerController->GetPlayerSpawnLocation(), FRotator(0, 90, 0), FActorSpawnParameters());
+		APlayerBase* const NewPlayer = GetWorld()->SpawnActor<APlayerBase>(DestroyedPlayer->GetClass(), PlayerController->GetPlayerSpawnLocation(), FRotator(0, 90, 0), FActorSpawnParameters());
 		PlayerController->Possess(NewPlayer);
 		NewPlayer->BindController(PlayerController);
 		if (!PlayerController->bInTutorial)
@@ -213,8 +202,7 @@ uint32 AGMBase::GetRandomRoomIndex()
 		}
 		ChanceIndex++;
 	}
-	int32 RandomizedClassIndex; // the index of room in RoomsClasses Array and Chances Array
-	RandomizedClassIndex = AllRoomsIndexesByChances[FMath::RandRange(0, AllRoomsIndexesByChances.Num() - 1)];
+	const uint32 RandomizedClassIndex = AllRoomsIndexesByChances[FMath::RandRange(0, AllRoomsIndexesByChances.Num() - 1)];
 	UpdateChances(RandomizedClassIndex);
 	return RandomizedClassIndex;
 }
@@ -269,7 +257,7 @@ void AGMBase::SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTr
 
 void AGMBase::SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform)
 {
-	ARoom* SpawnedRoom = GetWorld()->SpawnActor<ARoom>(RoomClass.Get(), SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), FActorSpawnParameters());
+	ARoom* const SpawnedRoom = GetWorld()->SpawnActor<ARoom>(RoomClass.Get(), SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), FActorSpawnParameters());
 	SpawnedRooms.Add(SpawnedRoom);
 	LastRoomExitTransform = SpawnedRoom->GetExitTransform();
 	SpawnedLeftTurns += SpawnedRoom->GetLeftTurns();

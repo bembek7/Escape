@@ -44,10 +44,10 @@ protected:
 
 private:
 	void CreateWidgets();
-	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
-	void HideFocusedWidget(UUserWidget* WidgetToHide);
-	void ShowWidgetAndPause(UUserWidget* WidgetToShow);
-	void HideWidgetAndUnpause(UUserWidget* WidgetToHide);
+	void ShowWidgetToFocus(UUserWidget* const WidgetToShow);
+	void HideFocusedWidget(UUserWidget* const WidgetToHide);
+	void ShowWidgetAndPause(UUserWidget* const WidgetToShow);
+	void HideWidgetAndUnpause(UUserWidget* const WidgetToHide);
 	void DecideSpawnLocation();
 
 public:

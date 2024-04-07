@@ -8,11 +8,11 @@
 void APlayerControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
-	if (AActor* TutorialStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	if (AActor* const TutorialStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
 	{
 		TutorialStartLocation = TutorialStart->GetActorLocation();
 	}
-	if (AActor* RegularStart = UGameplayStatics::GetActorOfClass(GetWorld(), ARegularStart::StaticClass()))
+	if (AActor* const RegularStart = UGameplayStatics::GetActorOfClass(GetWorld(), ARegularStart::StaticClass()))
 	{
 		RegularStartLocation = RegularStart->GetActorLocation();
 	}
@@ -20,8 +20,14 @@ void APlayerControllerBase::BeginPlay()
 	DecideSpawnLocation();
 	TeleportToSpawn();
 	CreateWidgets();
-	HudWidget->AddToPlayerScreen();
-	ShowWidgetToFocus(MainMenu);
+	if (HudWidget)
+	{
+		HudWidget->AddToPlayerScreen();
+	}
+	if (MainMenu)
+	{
+		ShowWidgetToFocus(MainMenu);
+	}
 }
 
 void APlayerControllerBase::Tick(float DeltaTime)
@@ -86,7 +92,7 @@ void APlayerControllerBase::CreateWidgets()
 	}
 }
 
-void APlayerControllerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow)
+void APlayerControllerBase::ShowWidgetToFocus(UUserWidget* const WidgetToShow)
 {
 	if (WidgetToShow)
 	{
@@ -96,7 +102,7 @@ void APlayerControllerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow)
 	bShowMouseCursor = true;
 }
 
-void APlayerControllerBase::HideFocusedWidget(UUserWidget* WidgetToHide)
+void APlayerControllerBase::HideFocusedWidget(UUserWidget* const WidgetToHide)
 {
 	if (WidgetToHide)
 	{
@@ -106,13 +112,13 @@ void APlayerControllerBase::HideFocusedWidget(UUserWidget* WidgetToHide)
 	bShowMouseCursor = false;
 }
 
-void APlayerControllerBase::ShowWidgetAndPause(UUserWidget* WidgetToShow)
+void APlayerControllerBase::ShowWidgetAndPause(UUserWidget* const WidgetToShow)
 {
 	ShowWidgetToFocus(WidgetToShow);
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
-void APlayerControllerBase::HideWidgetAndUnpause(UUserWidget* WidgetToHide)
+void APlayerControllerBase::HideWidgetAndUnpause(UUserWidget* const WidgetToHide)
 {
 	HideFocusedWidget(WidgetToHide);
 	UGameplayStatics::SetGamePaused(GetWorld(), false);
@@ -143,7 +149,10 @@ void APlayerControllerBase::UpdateDashIconScanHudWidget(const float Percent)
 
 void APlayerControllerBase::TeleportToTutorial()
 {
-	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(TutorialStartLocation);
+	if (ACharacter* const PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+	{
+		PlayerChar->SetActorLocation(TutorialStartLocation);
+	}
 	PlayerSpawnLocation = TutorialStartLocation;
 	bInTutorial = true;
 }
@@ -155,7 +164,10 @@ void APlayerControllerBase::SetSpawnLocationToRegular()
 
 void APlayerControllerBase::TeleportToSpawn() const
 {
-	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(PlayerSpawnLocation);
+	if (ACharacter* const PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+	{
+		PlayerChar->SetActorLocation(PlayerSpawnLocation);
+	}
 }
 
 FVector APlayerControllerBase::GetPlayerSpawnLocation() const

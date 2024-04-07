@@ -54,8 +54,8 @@ private:
 	void SpawnLevel();
 	void BindOnDestroyedToPlayer() const;
 	UFUNCTION()
-	void PlayerDestroyed(AActor* DestroyedPlayer);
-	void UpdateChances(uint32 ChosenIndex); // updating chances after picking the room to spawn
+	void PlayerDestroyed(AActor* const DestroyedPlayer);
+	void UpdateChances(const uint32 ChosenIndex); // updating chances after picking the room to spawn
 	void ClearRooms();
 	void GenerateEqualChances();
 	void SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTransform);

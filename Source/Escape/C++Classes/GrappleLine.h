@@ -13,12 +13,12 @@ class ESCAPE_API AGrappleLine : public AActor
 	GENERATED_BODY()
 
 public:
-	AGrappleLine() noexcept;
+	AGrappleLine();
 	virtual void Tick(float DeltaTime) override;
 	UFUNCTION(BlueprintCallable)
-	void GrappleOn(const FVector& Target) noexcept;
+	void GrappleOn(const FVector& Target);
 	UFUNCTION(BlueprintCallable)
-	void GrappleOff() noexcept;
+	void GrappleOff();
 
 protected:
 	virtual void BeginPlay() override;

@@ -29,7 +29,7 @@ void APlayerControllerBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void APlayerControllerBase::DecideSpawnLocation() noexcept
+void APlayerControllerBase::DecideSpawnLocation()
 {
 	USaveGameBase* SaveObject;
 	if (!UGameplayStatics::DoesSaveGameExist(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex))
@@ -53,7 +53,7 @@ void APlayerControllerBase::DecideSpawnLocation() noexcept
 	}
 }
 
-void APlayerControllerBase::CreateWidgets() noexcept
+void APlayerControllerBase::CreateWidgets()
 {
 	if (HudWidgetClass)
 	{
@@ -86,33 +86,39 @@ void APlayerControllerBase::CreateWidgets() noexcept
 	}
 }
 
-void APlayerControllerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow) noexcept
+void APlayerControllerBase::ShowWidgetToFocus(UUserWidget* WidgetToShow)
 {
-	WidgetToShow->AddToPlayerScreen();
+	if (WidgetToShow)
+	{
+		WidgetToShow->AddToPlayerScreen();
+	}
 	SetInputMode(FInputModeUIOnly());
 	bShowMouseCursor = true;
 }
 
-void APlayerControllerBase::HideFocusedWidget(UUserWidget* WidgetToHide) noexcept
+void APlayerControllerBase::HideFocusedWidget(UUserWidget* WidgetToHide)
 {
-	WidgetToHide->RemoveFromParent();
+	if (WidgetToHide)
+	{
+		WidgetToHide->RemoveFromParent();
+	}
 	SetInputMode(FInputModeGameOnly());
 	bShowMouseCursor = false;
 }
 
-void APlayerControllerBase::ShowWidgetAndPause(UUserWidget* WidgetToShow) noexcept
+void APlayerControllerBase::ShowWidgetAndPause(UUserWidget* WidgetToShow)
 {
 	ShowWidgetToFocus(WidgetToShow);
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
-void APlayerControllerBase::HideWidgetAndUnpause(UUserWidget* WidgetToHide) noexcept
+void APlayerControllerBase::HideWidgetAndUnpause(UUserWidget* WidgetToHide)
 {
 	HideFocusedWidget(WidgetToHide);
 	UGameplayStatics::SetGamePaused(GetWorld(), false);
 }
 
-void APlayerControllerBase::PauseUnpause() noexcept
+void APlayerControllerBase::PauseUnpause()
 {
 	if (PauseWidget)
 	{
@@ -127,64 +133,67 @@ void APlayerControllerBase::PauseUnpause() noexcept
 	}
 }
 
-void APlayerControllerBase::UpdateDashIconScanHudWidget(const float Percent) noexcept
+void APlayerControllerBase::UpdateDashIconScanHudWidget(const float Percent)
 {
-	HudWidget->UpdateDashIconScan(Percent);
+	if (HudWidget)
+	{
+		HudWidget->UpdateDashIconScan(Percent);
+	}
 }
 
-void APlayerControllerBase::TeleportToTutorial() noexcept
+void APlayerControllerBase::TeleportToTutorial()
 {
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(TutorialStartLocation);
 	PlayerSpawnLocation = TutorialStartLocation;
 	bInTutorial = true;
 }
 
-void APlayerControllerBase::SetSpawnLocationToRegular() noexcept
+void APlayerControllerBase::SetSpawnLocationToRegular()
 {
 	PlayerSpawnLocation = RegularStartLocation;
 }
 
-void APlayerControllerBase::TeleportToSpawn() const noexcept
+void APlayerControllerBase::TeleportToSpawn() const
 {
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(PlayerSpawnLocation);
 }
 
-FVector APlayerControllerBase::GetPlayerSpawnLocation() const noexcept
+FVector APlayerControllerBase::GetPlayerSpawnLocation() const
 {
 	return PlayerSpawnLocation;
 }
 
-void APlayerControllerBase::HideMainMenu() noexcept
+void APlayerControllerBase::HideMainMenu()
 {
 	HideFocusedWidget(MainMenu);
 }
 
-void APlayerControllerBase::HideDeathWidget() noexcept
+void APlayerControllerBase::HideDeathWidget()
 {
 	HideWidgetAndUnpause(DeathWidget);
 }
 
-void APlayerControllerBase::ShowTimeWidget() noexcept
+void APlayerControllerBase::ShowTimeWidget()
 {
 	TimeWidget->AddToPlayerScreen();
 }
 
-void APlayerControllerBase::HideTimeWidget() noexcept
+void APlayerControllerBase::HideTimeWidget()
 {
 	TimeWidget->RemoveFromParent();
 }
 
-void APlayerControllerBase::ShowFloorCompletedWidget() noexcept
+void APlayerControllerBase::ShowFloorCompletedWidget()
 {
 	ShowWidgetAndPause(FloorCompletedWidget);
 }
 
-void APlayerControllerBase::ShowDeathWidget() noexcept
+void APlayerControllerBase::ShowDeathWidget()
 {
 	ShowWidgetAndPause(DeathWidget);
 }
 
-void APlayerControllerBase::HideFloorCompletedWidget() noexcept
+void APlayerControllerBase::HideFloorCompletedWidget()
 {
 	HideWidgetAndUnpause(FloorCompletedWidget);
 }

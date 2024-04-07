@@ -25,80 +25,80 @@ class ESCAPE_API APlayerBase : public ACharacter
 	GENERATED_BODY()
 
 public:
-	APlayerBase() noexcept;
+	APlayerBase();
 
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void BindController(AController* NewController) noexcept;
+	void BindController(AController* NewController);
 	UFUNCTION(BlueprintCallable, Category = "Ladder")
-	void EnteredLadder(const FVector& LadderForward) noexcept;
+	void EnteredLadder(const FVector& LadderForward);
 	UFUNCTION(BlueprintCallable, Category = "Ladder")
-	void ExittedLadder() noexcept;
+	void ExittedLadder();
 	UFUNCTION(BlueprintCallable, Category = "Ladder")
-	void ExitLadderBoost() noexcept;
-	void OnDestroyed() noexcept;
+	void ExitLadderBoost();
+	void OnDestroyed();
 
 protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit) noexcept;
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit);
 	UFUNCTION()
-	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) noexcept;
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	// Crouch / Slide
 	UFUNCTION(BlueprintCallable, Category = "Crouch/Slide")
-	void CrouchSlide() noexcept;
+	void CrouchSlide();
 	UFUNCTION(BlueprintCallable, Category = "Crouch/Slide")
-	void StopCrouching() noexcept;
+	void StopCrouching();
 
 private:
 	UFUNCTION(Category = "Input Response")
-	void Walk(const FInputActionValue& IAValue) noexcept;
+	void Walk(const FInputActionValue& IAValue);
 	UFUNCTION(Category = "Input Response")
-	void Look(const FInputActionValue& IAValue) noexcept;
+	void Look(const FInputActionValue& IAValue);
 	UFUNCTION(Category = "Input Response")
-	void InputJump() noexcept;
+	void InputJump();
 	UFUNCTION(Category = "Input Response")
-	void Dash() noexcept;
+	void Dash();
 	UFUNCTION(Category = "Input Response")
-	void CrouchSlideStarted() noexcept;
+	void CrouchSlideStarted();
 	UFUNCTION(Category = "Input Response")
-	void CrouchSlideTriggered() noexcept;
+	void CrouchSlideTriggered();
 	UFUNCTION(Category = "Input Response")
-	void CrouchSlideCompleted() noexcept;
+	void CrouchSlideCompleted();
 	UFUNCTION(Category = "Input Response")
-	void PauseCalled() noexcept;
+	void PauseCalled();
 
 	// Sliding off
-	void StopSlidingOff() noexcept;
+	void StopSlidingOff();
 
 	// Wall run
-	bool CanWallBeRunOn(const FVector& WallNormal) const noexcept;
-	bool CanWallRun(const FVector& SurfaceNormal) noexcept;
-	void BeginWallRun() noexcept;
-	void EndWallRun() noexcept;
+	bool CanWallBeRunOn(const FVector& WallNormal) const;
+	bool CanWallRun(const FVector& SurfaceNormal);
+	void BeginWallRun();
+	void EndWallRun();
 	UFUNCTION()
-	void UpdateWallRun() noexcept;
+	void UpdateWallRun();
 	UFUNCTION()
-	void CameraTilt(float TimelineVal) const noexcept;
-	WallRunSide FindRunSide(const FVector& WallNormal) const noexcept;
-	FVector FindRunDirection(const FVector& WallNormal, WallRunSide Side) const noexcept;
-	FVector FindLaunchFromWallVelocity() const noexcept;
+	void CameraTilt(float TimelineVal) const;
+	WallRunSide FindRunSide(const FVector& WallNormal) const;
+	FVector FindRunDirection(const FVector& WallNormal, WallRunSide Side) const;
+	FVector FindLaunchFromWallVelocity() const;
 
 	// Sliding
 	UFUNCTION()
-	void Sliding(float Speed) noexcept;
+	void Sliding(float Speed);
 
 	// Grapple
-	void UseGrapple() noexcept;
-	void GrappleFirst() noexcept;
-	void GrappleSecond() noexcept;
+	void UseGrapple();
+	void GrappleFirst();
+	void GrappleSecond();
 	UFUNCTION()
-	void GrappleDragUpdate(float TimelineVal) noexcept;
-	bool FindGrappleTarget() noexcept;
+	void GrappleDragUpdate(float TimelineVal);
+	bool FindGrappleTarget();
 
 public:
 

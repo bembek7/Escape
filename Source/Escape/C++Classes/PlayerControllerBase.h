@@ -17,38 +17,38 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void PauseUnpause() noexcept;
+	void PauseUnpause();
 
-	void UpdateDashIconScanHudWidget(const float Percent) noexcept;
+	void UpdateDashIconScanHudWidget(const float Percent);
 
 	UFUNCTION(BlueprintCallable)
-	void TeleportToTutorial() noexcept;
+	void TeleportToTutorial();
 	UFUNCTION(BlueprintCallable)
-	void SetSpawnLocationToRegular() noexcept;
-	void TeleportToSpawn() const noexcept;
-	FVector GetPlayerSpawnLocation() const noexcept;
+	void SetSpawnLocationToRegular();
+	void TeleportToSpawn() const;
+	FVector GetPlayerSpawnLocation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void HideMainMenu() noexcept;
+	void HideMainMenu();
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void HideDeathWidget() noexcept;
-	void ShowTimeWidget() noexcept;
-	void HideTimeWidget() noexcept;
-	void ShowFloorCompletedWidget()  noexcept;
-	void ShowDeathWidget() noexcept;
+	void HideDeathWidget();
+	void ShowTimeWidget();
+	void HideTimeWidget();
+	void ShowFloorCompletedWidget();
+	void ShowDeathWidget();
 	UFUNCTION(BlueprintCallable, Category = "Widgets")
-	void HideFloorCompletedWidget() noexcept;
+	void HideFloorCompletedWidget();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	void CreateWidgets() noexcept;
-	void ShowWidgetToFocus(UUserWidget* WidgetToShow) noexcept;
-	void HideFocusedWidget(UUserWidget* WidgetToHide) noexcept;
-	void ShowWidgetAndPause(UUserWidget* WidgetToShow) noexcept;
-	void HideWidgetAndUnpause(UUserWidget* WidgetToHide) noexcept;
-	void DecideSpawnLocation() noexcept;
+	void CreateWidgets();
+	void ShowWidgetToFocus(UUserWidget* WidgetToShow);
+	void HideFocusedWidget(UUserWidget* WidgetToHide);
+	void ShowWidgetAndPause(UUserWidget* WidgetToShow);
+	void HideWidgetAndUnpause(UUserWidget* WidgetToHide);
+	void DecideSpawnLocation();
 
 public:
 	UPROPERTY(BLueprintReadWrite)

@@ -20,7 +20,7 @@ public:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateDashIconScan(const float Percent) noexcept;
+	void UpdateDashIconScan(const float Percent);
 
 protected:
 

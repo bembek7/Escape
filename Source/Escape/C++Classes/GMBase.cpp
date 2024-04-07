@@ -6,7 +6,7 @@
 #include "PlayerControllerBase.h"
 #include "PlayerBase.h"
 
-AGMBase::AGMBase() noexcept
+AGMBase::AGMBase()
 {
 	if (!UGameplayStatics::DoesSaveGameExist(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex))
 	{
@@ -23,7 +23,7 @@ void AGMBase::BeginPlay()
 	GenerateEqualChances();
 }
 
-void AGMBase::FloorStarted() noexcept
+void AGMBase::FloorStarted()
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PlayerController)
@@ -35,7 +35,7 @@ void AGMBase::FloorStarted() noexcept
 	GetWorldTimerManager().SetTimer(FloorTimer, [this]() { CurrentTime++; }, 0.01f, true);
 }
 
-void AGMBase::SetSavePlayedTutorial(bool Played) noexcept
+void AGMBase::SetSavePlayedTutorial(bool Played)
 {
 	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
@@ -45,7 +45,7 @@ void AGMBase::SetSavePlayedTutorial(bool Played) noexcept
 	}
 }
 
-int32 AGMBase::GetSavedTime() const noexcept
+int32 AGMBase::GetSavedTime() const
 {
 	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
@@ -55,9 +55,9 @@ int32 AGMBase::GetSavedTime() const noexcept
 	return 0;
 }
 
-int32 AGMBase::GetSavedFloorBeat() const noexcept
+int32 AGMBase::GetSavedFloorBeat() const
 {
-	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex)); 
+	const USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
 	{
 		return SaveObject->GetBestFloorCount();
@@ -65,7 +65,7 @@ int32 AGMBase::GetSavedFloorBeat() const noexcept
 	return 0;
 }
 
-void AGMBase::FloorCompleted() noexcept
+void AGMBase::FloorCompleted()
 {
 	SpawnedLeftTurns = 0;
 	SpawnedRightTurns = 0;
@@ -98,23 +98,23 @@ FText AGMBase::TimeToText(int32 TimeInHundredthsOfSeconds) const noexcept
 	return FText::FromString(Time);
 }
 
-FText AGMBase::GetCurrentTimeInText() const noexcept
+FText AGMBase::GetCurrentTimeInText() const
 {
 	return TimeToText(CurrentTime);
 }
 
-int32 AGMBase::GetCurrentFloorBeat() const noexcept
+int32 AGMBase::GetCurrentFloorBeat() const
 {
 	return CurrentFloorBeat;
 }
 
-void AGMBase::GameStarted() noexcept
+void AGMBase::GameStarted()
 {
 	SpawnLevel();
 	BindOnDestroyedToPlayer();
 }
 
-void AGMBase::SaveScore() const noexcept
+void AGMBase::SaveScore() const
 {
 	USaveGameBase* SaveObject = Cast<USaveGameBase>(UGameplayStatics::LoadGameFromSlot(USaveGameBase::SaveSlotName, USaveGameBase::SaveIndex));
 	if (SaveObject)
@@ -125,17 +125,17 @@ void AGMBase::SaveScore() const noexcept
 	}
 }
 
-void AGMBase::SpawnLevel() noexcept
+void AGMBase::SpawnLevel()
 {
 	ARoom* LastRoom = Cast<ARoom>(UGameplayStatics::GetActorOfClass(GetWorld(), ARoom::StaticClass()));
-	if(LastRoom)
+	if (LastRoom)
 	{
 		LastRoomExitTransform = LastRoom->GetExitTransform();
 		SpawnRooms(NumberOfRoomsToSpawn, LastRoomExitTransform);
 	}
 }
 
-void AGMBase::BindOnDestroyedToPlayer() const noexcept
+void AGMBase::BindOnDestroyedToPlayer() const
 {
 	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	if (PlayerChar)
@@ -144,7 +144,7 @@ void AGMBase::BindOnDestroyedToPlayer() const noexcept
 	}
 }
 
-void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer) noexcept
+void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer)
 {
 	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PlayerController)
@@ -170,7 +170,7 @@ void AGMBase::PlayerDestroyed(AActor* DestroyedPlayer) noexcept
 	}
 }
 
-void AGMBase::ClearRooms() noexcept
+void AGMBase::ClearRooms()
 {
 	for (auto& Room : SpawnedRooms)
 	{
@@ -189,7 +189,7 @@ void AGMBase::ClearRooms() noexcept
 	GenerateEqualChances();
 }
 
-TSubclassOf<ARoom> AGMBase::GetRandomRoomClass() noexcept
+TSubclassOf<ARoom> AGMBase::GetRandomRoomClass()
 {
 	const uint32 RandomIndex = GetRandomRoomIndex();
 	const TSubclassOf<ARoom> RandomClass = RoomsClasses[RandomIndex];
@@ -200,7 +200,7 @@ TSubclassOf<ARoom> AGMBase::GetRandomRoomClass() noexcept
 	return RandomClass;
 }
 
-uint32 AGMBase::GetRandomRoomIndex() noexcept
+uint32 AGMBase::GetRandomRoomIndex()
 {
 	TArray<int32>AllRoomsIndexesByChances;
 	AllRoomsIndexesByChances.Reserve(100);
@@ -219,7 +219,7 @@ uint32 AGMBase::GetRandomRoomIndex() noexcept
 	return RandomizedClassIndex;
 }
 
-void AGMBase::UpdateChances(const uint32 ChosenIndex) noexcept
+void AGMBase::UpdateChances(const uint32 ChosenIndex)
 {
 	const uint32 ChancesOfChosenIndex = RoomsChancesOfSpawning[ChosenIndex];
 	// we will set chances of index we got to 0 so we are distributing the chances of it to other classes chances
@@ -245,7 +245,7 @@ void AGMBase::UpdateChances(const uint32 ChosenIndex) noexcept
 	}
 }
 
-void AGMBase::GenerateEqualChances() noexcept
+void AGMBase::GenerateEqualChances()
 {
 	for (auto& chance : RoomsChancesOfSpawning)
 	{
@@ -254,7 +254,7 @@ void AGMBase::GenerateEqualChances() noexcept
 	RoomsChancesOfSpawning.Last() += 100 % RoomsChancesOfSpawning.Num();
 }
 
-void AGMBase::SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTransform) noexcept
+void AGMBase::SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTransform)
 {
 	if (RoomsToSpawn > 0)
 	{
@@ -267,7 +267,7 @@ void AGMBase::SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTr
 	}
 }
 
-void AGMBase::SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform) noexcept
+void AGMBase::SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform)
 {
 	ARoom* SpawnedRoom = GetWorld()->SpawnActor<ARoom>(RoomClass.Get(), SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), FActorSpawnParameters());
 	SpawnedRooms.Add(SpawnedRoom);

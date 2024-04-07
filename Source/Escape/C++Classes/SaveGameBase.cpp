@@ -4,22 +4,22 @@
 
 const FString USaveGameBase::SaveSlotName = "DefaultSave";
 
-void USaveGameBase::SaveFloorCount(const int32 NewFloorCount) noexcept
+void USaveGameBase::SaveFloorCount(const int32 NewFloorCount)
 {
 	BestFloorCount = FMath::Max(BestFloorCount, NewFloorCount);
 }
 
-int32 USaveGameBase::GetBestFloorCount() const noexcept
+int32 USaveGameBase::GetBestFloorCount() const
 {
 	return BestFloorCount;
 }
 
-void USaveGameBase::SaveTime(const int32 NewTime) noexcept
+void USaveGameBase::SaveTime(const int32 NewTime)
 {
 	BestTime = FMath::Min(BestTime, NewTime);
 }
 
-int32 USaveGameBase::GetBestTime() const noexcept
+int32 USaveGameBase::GetBestTime() const
 {
 	return BestTime;
 }

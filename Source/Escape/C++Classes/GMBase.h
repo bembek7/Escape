@@ -17,53 +17,53 @@ class ESCAPE_API AGMBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	AGMBase() noexcept;
+	AGMBase();
 
 	UFUNCTION(BlueprintCallable, Category = "Rooms")
-	void FloorCompleted() noexcept;
+	void FloorCompleted();
 
 	UFUNCTION(BlueprintCallable, Category = "Rooms")
-	void FloorStarted() noexcept;
+	void FloorStarted();
 
 	UFUNCTION(BlueprintCallable, Category = "Rooms")
-	void SetSavePlayedTutorial(bool Played) noexcept;
+	void SetSavePlayedTutorial(bool Played);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Rooms")
-	int32 GetSavedTime() const noexcept;
+	int32 GetSavedTime() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Rooms")
-	int32 GetSavedFloorBeat() const noexcept;
+	int32 GetSavedFloorBeat() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Rooms")
-	FText TimeToText(int32 TimeInHundredthsOfSeconds) const noexcept; // Converting time in hundredths of seconds to text in format mm:ss:hh
+	FText TimeToText(int32 TimeInHundredthsOfSeconds) const; // Converting time in hundredths of seconds to text in format mm:ss:hh
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Rooms")
-	FText GetCurrentTimeInText() const noexcept;
+	FText GetCurrentTimeInText() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Rooms")
-	int32 GetCurrentFloorBeat() const noexcept;
+	int32 GetCurrentFloorBeat() const;
 
 	UFUNCTION(BlueprintCallable)
-	void GameStarted() noexcept;
+	void GameStarted();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	void SaveScore() const noexcept;
-	void SpawnLevel() noexcept;
-	void BindOnDestroyedToPlayer() const noexcept;
+	void SaveScore() const;
+	void SpawnLevel();
+	void BindOnDestroyedToPlayer() const;
 	UFUNCTION()
-	void PlayerDestroyed(AActor* DestroyedPlayer) noexcept;
-	void UpdateChances(uint32 ChosenIndex) noexcept; // updating chances after picking the room to spawn
-	void ClearRooms() noexcept;
-	void GenerateEqualChances() noexcept;
-	void SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTransform) noexcept;
-	void SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform) noexcept;
+	void PlayerDestroyed(AActor* DestroyedPlayer);
+	void UpdateChances(uint32 ChosenIndex); // updating chances after picking the room to spawn
+	void ClearRooms();
+	void GenerateEqualChances();
+	void SpawnRooms(const uint32 RoomsToSpawn, const FTransform& LastExitTransform);
+	void SpawnRoom(const TSubclassOf<ARoom>& RoomClass, const FTransform& SpawnTransform);
 
-	TSubclassOf<ARoom> GetRandomRoomClass() noexcept;
+	TSubclassOf<ARoom> GetRandomRoomClass();
 
-	uint32 GetRandomRoomIndex() noexcept; // Gets random room index, randomizing is make that so rooms wouldn't reapet and appear regularly
+	uint32 GetRandomRoomIndex(); // Gets random room index, randomizing is make that so rooms wouldn't reapet and appear regularly
 
 public:
 

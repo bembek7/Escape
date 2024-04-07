@@ -5,7 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Math/UnrealMathUtility.h"
 
-AGrappleLine::AGrappleLine() noexcept
+AGrappleLine::AGrappleLine()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	GrappleLine = CreateDefaultSubobject<UCableComponent>(TEXT("GrappleLine"));
@@ -22,16 +22,16 @@ void AGrappleLine::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	// Developing the grapple from player to a grapple target
-	if (bDeveloping)
+	if (bDeveloping && GrappleLine)
 	{
 		GrappleLine->SetWorldLocation(FMath::VInterpTo(GrappleLine->GetComponentLocation(), GrappleTarget, DeltaTime, DevelopingSpeed));
 	}
 }
 
-void AGrappleLine::GrappleOn(const FVector& Target) noexcept
+void AGrappleLine::GrappleOn(const FVector& Target)
 {
-	const ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (PlayerChar)
+	ACharacter* const PlayerChar = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (PlayerChar && GrappleLine)
 	{
 		GrappleLine->SetAttachEndToComponent(PlayerChar->GetMesh()); // We are attaching end of grapple line to player
 		GrappleTarget = Target;
@@ -45,5 +45,8 @@ void AGrappleLine::GrappleOn(const FVector& Target) noexcept
 void AGrappleLine::GrappleOff() noexcept
 {
 	bDeveloping = false;
-	GrappleLine->SetVisibility(false);
+	if(GrappleLine)
+	{
+		GrappleLine->SetVisibility(false);
+	}
 }

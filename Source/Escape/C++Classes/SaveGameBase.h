@@ -16,16 +16,16 @@ class ESCAPE_API USaveGameBase : public USaveGame
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SaveFloorCount(const int32 NewFloorCount) noexcept;
+	void SaveFloorCount(const int32 NewFloorCount);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetBestFloorCount() const noexcept;
+	int32 GetBestFloorCount() const;
 
 	UFUNCTION(BlueprintCallable)
-	void SaveTime(const int32 NewTime) noexcept;
+	void SaveTime(const int32 NewTime);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetBestTime() const noexcept;
+	int32 GetBestTime() const;
 
 protected:
 

@@ -11,15 +11,15 @@ class ESCAPE_API ARoom : public AActor
 	GENERATED_BODY()
 
 public:
-	ARoom() noexcept;
+	ARoom();
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetLeftTurns() const noexcept;
+	int32 GetLeftTurns() const;
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetRightTurns() const noexcept;
+	int32 GetRightTurns() const;
 
-	FTransform GetExitTransform() const noexcept;
+	FTransform GetExitTransform() const;
 
 protected:
 

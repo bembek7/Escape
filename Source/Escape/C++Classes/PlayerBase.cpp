@@ -8,7 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-APlayerBase::APlayerBase() noexcept
+APlayerBase::APlayerBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	// Creating timelines
@@ -149,7 +149,7 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	}
 }
 
-void APlayerBase::BindController(AController* NewController) noexcept
+void APlayerBase::BindController(AController* NewController)
 {
 	if (const APlayerController* PlayerController = Cast<APlayerControllerBase>(NewController))
 	{
@@ -167,7 +167,7 @@ void APlayerBase::BindController(AController* NewController) noexcept
 	}
 }
 
-void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit) noexcept
+void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpuls, const FHitResult& Hit)
 {
 	if (OtherComp->ComponentHasTag(WallRunTag) && CanWallRun(Hit.ImpactNormal))
 	{
@@ -185,7 +185,7 @@ void APlayerBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	}
 }
 
-void APlayerBase::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) noexcept
+void APlayerBase::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherComp->ComponentHasTag(JumpPadTag))
 	{
@@ -195,7 +195,7 @@ void APlayerBase::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 }
 
-bool APlayerBase::CanWallBeRunOn(const FVector& WallNormal) const noexcept
+bool APlayerBase::CanWallBeRunOn(const FVector& WallNormal) const
 {
 	const float WallAcceptedAngle = -0.05f;
 	const double WallAngle = UKismetMathLibrary::DegAcos(FVector::DotProduct(WallNormal.GetSafeNormal2D(), WallNormal));
@@ -203,7 +203,7 @@ bool APlayerBase::CanWallBeRunOn(const FVector& WallNormal) const noexcept
 	return WallNormal.Z >= WallAcceptedAngle && WallAngleRunnable;
 }
 
-void APlayerBase::EnteredLadder(const FVector& LadderForward) noexcept
+void APlayerBase::EnteredLadder(const FVector& LadderForward)
 {
 	if (bCanEnterLadder)
 	{
@@ -215,7 +215,7 @@ void APlayerBase::EnteredLadder(const FVector& LadderForward) noexcept
 	}
 }
 
-void APlayerBase::ExittedLadder() noexcept
+void APlayerBase::ExittedLadder()
 {
 	bIsOnLadder = false;
 	if (!bIsGrappling)
@@ -226,13 +226,13 @@ void APlayerBase::ExittedLadder() noexcept
 	GetWorldTimerManager().SetTimer(LadderCooldownHandle, [this]() { bCanEnterLadder = true; }, LadderCooldown, false);
 }
 
-void APlayerBase::ExitLadderBoost() noexcept
+void APlayerBase::ExitLadderBoost()
 {
 	const uint32 LaunchForce = 50;
 	LaunchCharacter(GetActorUpVector() * LaunchForce, false, false);
 }
 
-void APlayerBase::OnDestroyed() noexcept
+void APlayerBase::OnDestroyed()
 {
 	if (ScanDashIcon.IsValid())
 	{
@@ -240,7 +240,7 @@ void APlayerBase::OnDestroyed() noexcept
 	}
 }
 
-void APlayerBase::Walk(const FInputActionValue& IAValue) noexcept
+void APlayerBase::Walk(const FInputActionValue& IAValue)
 {
 	const FVector2D MoveVector = IAValue.Get<FVector2D>();
 	float XAxis = MoveVector.X;
@@ -282,14 +282,14 @@ void APlayerBase::Walk(const FInputActionValue& IAValue) noexcept
 	}
 }
 
-void APlayerBase::Look(const FInputActionValue& IAValue) noexcept
+void APlayerBase::Look(const FInputActionValue& IAValue)
 {
 	const FVector2D LookVector = IAValue.Get<FVector2D>();
 	AddControllerYawInput(LookVector.X * MouseXSensitivity);
 	AddControllerPitchInput(LookVector.Y * MouseYSensitivity * -1);
 }
 
-void APlayerBase::InputJump() noexcept
+void APlayerBase::InputJump()
 {
 	StopCrouching();
 	if (bIsOnLadder)
@@ -313,7 +313,7 @@ void APlayerBase::InputJump() noexcept
 	}
 }
 
-void APlayerBase::Dash() noexcept// Dash ability
+void APlayerBase::Dash()// Dash ability
 {
 	if (!bDashOnCooldown && !bIsGrappling)
 	{
@@ -335,7 +335,7 @@ void APlayerBase::Dash() noexcept// Dash ability
 	}
 }
 
-void APlayerBase::CrouchSlideStarted() noexcept
+void APlayerBase::CrouchSlideStarted()
 {
 	if (MovementComponent->IsMovingOnGround())
 	{
@@ -347,7 +347,7 @@ void APlayerBase::CrouchSlideStarted() noexcept
 	}
 }
 
-void APlayerBase::CrouchSlideTriggered() noexcept
+void APlayerBase::CrouchSlideTriggered()
 {
 	if (bHoldingCrouch)
 	{
@@ -359,7 +359,7 @@ void APlayerBase::CrouchSlideTriggered() noexcept
 	}
 }
 
-void APlayerBase::CrouchSlideCompleted() noexcept
+void APlayerBase::CrouchSlideCompleted()
 {
 	if (!bIsSlidingOff)
 	{
@@ -368,7 +368,7 @@ void APlayerBase::CrouchSlideCompleted() noexcept
 	}
 }
 
-void APlayerBase::PauseCalled() noexcept
+void APlayerBase::PauseCalled()
 {
 	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
 	{
@@ -376,7 +376,7 @@ void APlayerBase::PauseCalled() noexcept
 	}
 }
 
-void APlayerBase::CrouchSlide() noexcept // If player is fast enough we initiate slide if not we initiate normal crouch
+void APlayerBase::CrouchSlide() // If player is fast enough we initiate slide if not we initiate normal crouch
 {
 	const double PlayerSpeed = UKismetMathLibrary::VSizeXY(MovementComponent->Velocity);
 	Crouch();
@@ -393,13 +393,13 @@ void APlayerBase::CrouchSlide() noexcept // If player is fast enough we initiate
 	}
 }
 
-void APlayerBase::StopCrouching() noexcept
+void APlayerBase::StopCrouching()
 {
 	UnCrouch();
 	MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
 }
 
-void APlayerBase::StopSlidingOff() noexcept
+void APlayerBase::StopSlidingOff()
 {
 	MovementComponent->MaxWalkSpeedCrouched = DefaultCrouchSpeed;
 	MovementComponent->MaxAcceleration = DefaultAcceleration;
@@ -407,7 +407,7 @@ void APlayerBase::StopSlidingOff() noexcept
 	StopCrouching();
 }
 
-void APlayerBase::BeginWallRun() noexcept // Setting the values for wall running or movement and tilting camera
+void APlayerBase::BeginWallRun() // Setting the values for wall running or movement and tilting camera
 {
 	MovementComponent->AirControl = 1;
 	MovementComponent->GravityScale = 0;
@@ -417,7 +417,7 @@ void APlayerBase::BeginWallRun() noexcept // Setting the values for wall running
 	GetWorldTimerManager().SetTimer(WallRunTimer, this, &APlayerBase::UpdateWallRun, 0.1f, true);
 }
 
-void APlayerBase::EndWallRun() noexcept // Setting the default values or movement and tilting camera back
+void APlayerBase::EndWallRun() // Setting the default values or movement and tilting camera back
 {
 	MovementComponent->AirControl = DefaultAirControl;
 	MovementComponent->GravityScale = DefaultGravityScale;
@@ -427,7 +427,7 @@ void APlayerBase::EndWallRun() noexcept // Setting the default values or movemen
 	GetWorldTimerManager().ClearTimer(WallRunTimer);
 }
 
-void APlayerBase::UpdateWallRun() noexcept // Wall run function called every tick when wallrunning setting velocity or ending the wall run
+void APlayerBase::UpdateWallRun() // Wall run function called every tick when wallrunning setting velocity or ending the wall run
 {
 	FHitResult HitResult;
 	FVector SideToTrace;
@@ -463,14 +463,14 @@ void APlayerBase::UpdateWallRun() noexcept // Wall run function called every tic
 	}
 }
 
-bool APlayerBase::CanWallRun(const FVector& SurfaceNormal) noexcept
+bool APlayerBase::CanWallRun(const FVector& SurfaceNormal)
 {
 	const uint32 MinVelocity = 200;
 	const float PlayerVelocity = UKismetMathLibrary::Quat_UnrotateVector(FQuat(GetActorRotation()), GetVelocity()).X;
 	return !bIsWallRunning && MovementComponent->IsFalling() && PlayerVelocity > MinVelocity && YWalkAxis >= 0 && CanWallBeRunOn(SurfaceNormal);
 }
 
-void APlayerBase::CameraTilt(float TimelineVal) const noexcept // When wallrunning camera tilts a little bit
+void APlayerBase::CameraTilt(float TimelineVal) const // When wallrunning camera tilts a little bit
 {
 	int32 CameraTiltSide;
 	switch (CurrentSide)
@@ -490,7 +490,7 @@ void APlayerBase::CameraTilt(float TimelineVal) const noexcept // When wallrunni
 	}
 }
 
-WallRunSide APlayerBase::FindRunSide(const FVector& WallNormal) const noexcept
+WallRunSide APlayerBase::FindRunSide(const FVector& WallNormal) const
 {
 	const double DotResult = FVector2D::DotProduct(FVector2D(WallNormal), FVector2D(GetActorRightVector()));
 	WallRunSide SideFound;
@@ -505,7 +505,7 @@ WallRunSide APlayerBase::FindRunSide(const FVector& WallNormal) const noexcept
 	return SideFound;
 }
 
-FVector APlayerBase::FindRunDirection(const FVector& WallNormal, WallRunSide Side) const noexcept
+FVector APlayerBase::FindRunDirection(const FVector& WallNormal, WallRunSide Side) const
 {
 	FVector RunSide;
 	switch (Side)
@@ -524,7 +524,7 @@ FVector APlayerBase::FindRunDirection(const FVector& WallNormal, WallRunSide Sid
 	return FVector::CrossProduct(WallNormal, RunSide);
 }
 
-FVector APlayerBase::FindLaunchFromWallVelocity() const noexcept
+FVector APlayerBase::FindLaunchFromWallVelocity() const
 {
 	FVector SideToJumpFrom;
 	switch (CurrentSide)
@@ -542,7 +542,7 @@ FVector APlayerBase::FindLaunchFromWallVelocity() const noexcept
 	return FVector((FVector::CrossProduct(WallRunDirection, SideToJumpFrom) + FVector(0, 0, 1)) * MovementComponent->JumpZVelocity * LaunchForceMultiplier + AdditionalUpForce);
 }
 
-void APlayerBase::Sliding(float Speed) noexcept // Slide function called every tick when sliding // should add some left-right input constraints
+void APlayerBase::Sliding(float Speed) // Slide function called every tick when sliding // should add some left-right input constraints
 {
 	MovementComponent->MaxWalkSpeedCrouched -= Speed * SlideSpeedDifference;
 	SlideSpeedDifference = MovementComponent->MaxWalkSpeedCrouched - DefaultCrouchSpeed;
@@ -561,7 +561,7 @@ void APlayerBase::Sliding(float Speed) noexcept // Slide function called every t
 	}
 }
 
-void APlayerBase::UseGrapple() noexcept
+void APlayerBase::UseGrapple()
 {
 	if (!bIsGrappling)
 	{
@@ -576,7 +576,7 @@ void APlayerBase::UseGrapple() noexcept
 	}
 }
 
-void APlayerBase::GrappleFirst() noexcept
+void APlayerBase::GrappleFirst()
 {
 	GrappleLine = GetWorld()->SpawnActor<AGrappleLine>(GrappleLineClass, GetActorTransform(), FActorSpawnParameters());
 	GrappleLine->GrappleOn(GrappleTarget->GetActorLocation());
@@ -595,7 +595,7 @@ void APlayerBase::GrappleFirst() noexcept
 	GrappleDragTimeline->PlayFromStart();
 }
 
-void APlayerBase::GrappleSecond() noexcept
+void APlayerBase::GrappleSecond()
 {
 	if (APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController()))
 	{
@@ -619,7 +619,7 @@ void APlayerBase::GrappleSecond() noexcept
 	MovementComponent->AddImpulse(GrappleForce);
 }
 
-void APlayerBase::GrappleDragUpdate(float TimelineVal) noexcept
+void APlayerBase::GrappleDragUpdate(float TimelineVal)
 {
 	const FVector GrappleDirection = (GrappleTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	const FVector GrappleForce = GrappleDirection * GrappleForceMultiplier * MovementComponent->Mass * TimelineVal;
@@ -631,7 +631,7 @@ void APlayerBase::GrappleDragUpdate(float TimelineVal) noexcept
 	}
 }
 
-bool APlayerBase::FindGrappleTarget() noexcept
+bool APlayerBase::FindGrappleTarget()
 {
 	GrappleTarget = nullptr;
 	const float TraceRadius = GrappleRange;

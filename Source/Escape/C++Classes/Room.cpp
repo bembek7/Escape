@@ -1,6 +1,6 @@
 #include "Room.h"
 
-ARoom::ARoom() noexcept
+ARoom::ARoom()
 {
 	DefaultRootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultRootComponent"));
 	SetRootComponent(DefaultRootComponent);
@@ -8,17 +8,17 @@ ARoom::ARoom() noexcept
 	LevelExit->SetupAttachment(RootComponent);
 }
 
-int32 ARoom::GetLeftTurns() const noexcept
+int32 ARoom::GetLeftTurns() const
 {
 	return LeftTurns;
 }
 
-int32 ARoom::GetRightTurns() const noexcept
+int32 ARoom::GetRightTurns() const
 {
 	return RightTurns;
 }
 
-FTransform ARoom::GetExitTransform() const noexcept
+FTransform ARoom::GetExitTransform() const
 {
 	return LevelExit->GetComponentTransform();
 }
